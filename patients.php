@@ -8,20 +8,20 @@ $error = '';
 $view_patient = null;
 
 // Handle form submissions
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['bulk_delete'])) {
         // Bulk delete selected patients
         if (!empty($_POST['selected_patients'])) {
-            $ids = array_map('intval', $_POST['selected_patients']);
+            $ids = array_map('strval', $_POST['selected_patients']);
             if (!empty($ids)) {
                 $placeholders = implode(',', array_fill(0, count($ids), '?'));
                 try {
                     // First delete all appointments associated with these patients
                     $stmt = $pdo->prepare("DELETE FROM appointments WHERE patient_id IN ($placeholders)");
                     $stmt->execute($ids);
-                    
                     // Then delete the patients
-                    $stmt = $pdo->prepare("DELETE FROM patients WHERE id IN ($placeholders)");
+                    $stmt = $pdo->prepare("DELETE FROM patients WHERE patient_id IN ($placeholders)");
                     $stmt->execute($ids);
                     showAlert(count($ids) . ' patient(s) and their appointments deleted successfully!', 'success');
                     redirect('patients.php');
@@ -52,13 +52,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = 'Please fill in all required fields';
         } else {
             try {
-                $patient_id = generateId('PAT', 'patients', 'patient_id');
-                
                 $stmt = $pdo->prepare("INSERT INTO patients (patient_id, first_name, last_name, date_of_birth, gender, phone, email, address, emergency_contact_name, emergency_contact_phone, blood_type, allergies, insurance_number, insurance_provider, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                
-                $stmt->execute([$patient_id, $first_name, $last_name, $date_of_birth, $gender, $phone, $email, $address, $emergency_contact_name, $emergency_contact_phone, $blood_type, $allergies, $insurance_number, $insurance_provider, $_SESSION['user_id']]);
-                
-                showAlert('Patient registered successfully! Patient ID: ' . $patient_id, 'success');
+                $stmt->execute([null, $first_name, $last_name, $date_of_birth, $gender, $phone, $email, $address, $emergency_contact_name, $emergency_contact_phone, $blood_type, $allergies, $insurance_number, $insurance_provider, $_SESSION['user_id']]);
+                // Fetch the generated patient_id
+                $stmt2 = $pdo->query("SELECT patient_id FROM patients ORDER BY created_at DESC LIMIT 1");
+                $row = $stmt2->fetch();
+                $generated_patient_id = $row ? $row['patient_id'] : '';
+                showAlert('Patient registered successfully! Patient ID: ' . $generated_patient_id, 'success');
                 redirect('patients.php');
             } catch (PDOException $e) {
                 $error = 'Error adding patient: ' . $e->getMessage();
@@ -66,8 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     } elseif ($action == 'edit' && isset($_GET['id'])) {
         // Edit existing patient
-        $patient_id = (int)$_GET['id'];
-        
+        $patient_id = $_GET['id'];
         $first_name = sanitize($_POST['first_name']);
         $last_name = sanitize($_POST['last_name']);
         $date_of_birth = sanitize($_POST['date_of_birth']);
@@ -86,10 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = 'Please fill in all required fields';
         } else {
             try {
-                $stmt = $pdo->prepare("UPDATE patients SET first_name = ?, last_name = ?, date_of_birth = ?, gender = ?, phone = ?, email = ?, address = ?, emergency_contact_name = ?, emergency_contact_phone = ?, blood_type = ?, allergies = ?, insurance_number = ?, insurance_provider = ?, updated_at = NOW() WHERE id = ?");
-                
+                $stmt = $pdo->prepare("UPDATE patients SET first_name = ?, last_name = ?, date_of_birth = ?, gender = ?, phone = ?, email = ?, address = ?, emergency_contact_name = ?, emergency_contact_phone = ?, blood_type = ?, allergies = ?, insurance_number = ?, insurance_provider = ?, updated_at = NOW() WHERE patient_id = ?");
                 $stmt->execute([$first_name, $last_name, $date_of_birth, $gender, $phone, $email, $address, $emergency_contact_name, $emergency_contact_phone, $blood_type, $allergies, $insurance_number, $insurance_provider, $patient_id]);
-                
                 showAlert('Patient updated successfully!', 'success');
                 redirect('patients.php');
             } catch (PDOException $e) {
@@ -98,11 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     } elseif (isset($_POST['delete_patient']) && $action == 'delete' && isset($_GET['id'])) {
         // Delete patient
-        $patient_id = (int)$_GET['id'];
+        $patient_id = $_GET['id'];
         try {
-            $stmt = $pdo->prepare("DELETE FROM patients WHERE id = ?");
+            $stmt = $pdo->prepare("DELETE FROM patients WHERE patient_id = ?");
             $stmt->execute([$patient_id]);
-            
             showAlert('Patient deleted successfully!', 'success');
             redirect('patients.php');
         } catch (PDOException $e) {
@@ -113,9 +109,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 // Get patient data for editing
 if (($action == 'edit' || $action == 'view') && isset($_GET['id'])) {
-    $patient_id = (int)$_GET['id'];
+    $patient_id = $_GET['id'];
     try {
-        $stmt = $pdo->prepare("SELECT * FROM patients WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT * FROM patients WHERE patient_id = ?");
         $stmt->execute([$patient_id]);
         $patient = $stmt->fetch();
         if (!$patient) {
@@ -153,7 +149,7 @@ if (($action == 'edit' || $action == 'view') && isset($_GET['id'])) {
 
             // Fetch medical history for this patient
             try {
-                $stmt = $pdo->prepare("SELECT mh.*, d.specialization, d.doctor_id AS doc_id, u.full_name AS doctor_name FROM medical_history mh JOIN doctors d ON mh.doctor_id = d.id JOIN users u ON d.user_id = u.id WHERE mh.patient_id = ? ORDER BY mh.visit_date ASC, mh.id ASC");
+                $stmt = $pdo->prepare("SELECT mh.*, d.specialization, d.doctor_id AS doc_id, u.full_name AS doctor_name FROM medical_history mh JOIN doctors d ON mh.doctor_id = d.doctor_id JOIN users u ON d.user_id = u.user_id WHERE mh.patient_id = ? ORDER BY mh.visit_date ASC, mh.id ASC");
                 $stmt->execute([$patient_id]);
                 $view_patient['medical_history'] = $stmt->fetchAll();
             } catch (PDOException $e) {
@@ -191,7 +187,7 @@ try {
     $total_pages = ceil($total_patients / $limit);
     
     // Get patients
-    $stmt = $pdo->prepare("SELECT * FROM patients $where_clause ORDER BY created_at DESC LIMIT $limit OFFSET $offset");
+    $stmt = $pdo->prepare("SELECT * FROM patients $where_clause ORDER BY patient_id DESC LIMIT $limit OFFSET $offset");
     $stmt->execute($params);
     $patients = $stmt->fetchAll();
 } catch (PDOException $e) {
@@ -220,7 +216,7 @@ try {
             <main class="dashboard-main">
                 <?php if ($action == 'list'): ?>
                 <!-- Patients List -->
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-0 pb-2 mb-3 border-bottom">
                     <h1 class="dashboard-title display-6 fw-bold mb-0 d-flex align-items-center gap-2">
                         Patients Management
                     </h1>
@@ -232,6 +228,7 @@ try {
                         <button type="button" class="btn btn-danger" style="background-color:#e53935; border:none; font-weight:bold; margin-left:8px;" onclick="deleteSelectedPatients()">
                             <i class="fas fa-trash"></i> Delete Patient
                         </button>
+                        
                         <?php endif; ?>
                     </div>
                 </div>
@@ -297,7 +294,7 @@ try {
                                             <?php foreach ($patients as $patient): ?>
                                             <tr>
                                                 <td>
-                                                    <input type="checkbox" name="selected_patients[]" value="<?php echo $patient['id']; ?>">
+                                                    <input type="checkbox" name="selected_patients[]" value="<?php echo htmlspecialchars($patient['patient_id']); ?>">
                                                 </td>
                                                 <td>
                                                     <strong><?php echo htmlspecialchars($patient['patient_id']); ?></strong>
@@ -326,14 +323,14 @@ try {
                                             <td><?php echo formatDate($patient['created_at']); ?></td>
                                             <td>
                                                 <div class="btn-group btn-group-sm">
-                                                    <a href="patients.php?action=view&id=<?php echo $patient['id']; ?>" class="btn btn-info btn-action-icon" title="View Details">
+                                                    <a href="patients.php?action=view&id=<?php echo urlencode($patient['patient_id']); ?>" class="btn btn-info btn-action-icon" title="View Details">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                     <?php if (!hasRole('doctor')): ?>
-                                                    <a href="patients.php?action=edit&id=<?php echo $patient['id']; ?>" class="btn btn-warning btn-action-icon" title="Edit">
+                                                    <a href="patients.php?action=edit&id=<?php echo urlencode($patient['patient_id']); ?>" class="btn btn-warning btn-action-icon" title="Edit">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <a href="appointments.php?action=add&patient_id=<?php echo $patient['id']; ?>" class="btn btn-success btn-action-icon" title="Schedule Appointment">
+                                                    <a href="appointments.php?action=add&patient_id=<?php echo urlencode($patient['patient_id']); ?>" class="btn btn-success btn-action-icon" title="Schedule Appointment">
                                                         <i class="fas fa-calendar-plus"></i>
                                                     </a>
                                                     <?php endif; ?>
@@ -376,54 +373,96 @@ try {
                 </div>
 
                 <?php elseif ($action == 'view' && $view_patient): ?>
+
                 <!-- View Patient Details -->
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2 fw-bold mb-0">
-                        Patient Details
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-0 pb-2 mb-3 border-bottom">
+                    <h1 class="dashboard-title display-6 fw-bold mb-0">
+                         Patient Details
                     </h1>
-                    <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-toolbar mb-2 mb-md-0 gap-2">
+                        <button type="button" class="btn btn-success" onclick="printPatientDetails()">
+                            <i class="fas fa-print"></i> Print Details
+                        </button>
                         <a href="patients.php" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Back to List
                         </a>
                     </div>
                 </div>
-                <div class="card shadow">
-                    <div class="card-body p-4" style="border-radius: 1rem; background: #f8f9fa; box-shadow: 0 2px 16px rgba(0,0,0,0.07);">
-                        <div class="row g-4 align-items-center">
-                            <div class="col-md-6 mb-3">
-                                <h5><i class="fas fa-id-badge"></i> <?php echo htmlspecialchars($view_patient['patient_id']); ?></h5>
-                                <p class="mb-1"><span class="fw-semibold text-secondary">Name:</span> <span class="fs-5 fw-bold text-dark"><?php echo htmlspecialchars($view_patient['first_name'] . ' ' . $view_patient['last_name']); ?></span></p>
-                                <p class="mb-1"><span class="fw-semibold text-secondary">Date of Birth:</span> <?php echo htmlspecialchars($view_patient['date_of_birth']); ?></p>
-                                <p class="mb-1"><span class="fw-semibold text-secondary">Gender:</span> <?php echo htmlspecialchars($view_patient['gender']); ?></p>
-                                <p class="mb-1"><span class="fw-semibold text-secondary">Phone:</span> <?php echo htmlspecialchars($view_patient['phone']); ?></p>
-                                <p class="mb-1"><span class="fw-semibold text-secondary">Email:</span> <?php echo htmlspecialchars($view_patient['email']); ?></p>
-                                <p class="mb-1"><span class="fw-semibold text-secondary">Address:</span> <?php echo htmlspecialchars($view_patient['address']); ?></p>
+                
+                <div id="printableArea">
+                <div class="card shadow-lg border-0" style="border-radius: 1rem;">
+                    <div class="card-header bg-primary text-white" style="border-radius: 1rem 1rem 0 0; background: linear-gradient(135deg, #007bff 0%, #6610f2 100%) !important;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                                <h4 class="mb-0 fw-bold" style="font-family: 'Poppins', 'Segoe UI', sans-serif; font-size: 1.60rem;"><?php echo htmlspecialchars($view_patient['first_name'] . ' ' . $view_patient['last_name']); ?></h4>
+                                <span class="badge bg-light text-dark" style="font-size: 0.9rem;"><?php echo htmlspecialchars($view_patient['patient_id']); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4" style="background: #fff; font-family: 'Poppins', 'Segoe UI', sans-serif;">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">Personal Information</h6>
+                                <div class="mb-2" style="font-size: 1.00rem;"><span class="text-secondary">Date of Birth:</span> <span class="fw-semibold text-dark ms-2" style="font-size: 0.95rem;"><?php echo htmlspecialchars($view_patient['date_of_birth']); ?></span></div>
+
+                                <div class="mb-2" style="font-size: 1.00rem;"><span class="text-secondary">Gender:</span> <span class="fw-semibold text-dark ms-2" style="font-size: 0.95rem;"><?php echo htmlspecialchars($view_patient['gender']); ?></span></div>
+
+                                <div class="mb-2" style="font-size: 1.00rem;"><span class="text-secondary">Phone:</span> <span class="fw-semibold text-dark ms-2" style="font-size: 0.95rem;"><?php echo htmlspecialchars($view_patient['phone']); ?></span></div>
+
+                                <div class="mb-2" style="font-size: 1.00rem;"><span class="text-secondary">Email:</span> <span class="fw-semibold text-dark ms-2" style="font-size: 0.95rem;"><?php echo htmlspecialchars($view_patient['email'] ?: '-'); ?></span></div>
+
+                                <div class="mb-2" style="font-size: 1.00rem;"><span class="text-secondary">Address:</span> <span class="fw-semibold text-dark ms-2" style="font-size: 0.95rem;"><?php echo htmlspecialchars($view_patient['address']); ?></span></div>
+                                
                                 <hr class="my-3">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">Appointment Summary</h6>
                                 <div class="d-flex flex-wrap gap-3 align-items-center">
-                                    <span class="fw-semibold text-secondary">Total Appointments:</span> <span class="badge rounded-pill bg-primary px-3 py-2 fs-6"><?php echo (int)($view_patient['appt_stats']['total'] ?? 0); ?></span>
-                                    <span class="fw-semibold text-secondary">Currently Scheduled:</span> <span class="badge rounded-pill bg-<?php echo ((int)($view_patient['appt_stats']['scheduled'] ?? 0) > 0) ? 'success' : 'secondary'; ?> px-3 py-2 fs-6"><?php echo ((int)($view_patient['appt_stats']['scheduled'] ?? 0) > 0) ? 'Scheduled' : 'Not Scheduled'; ?></span>
+                                    <div class="text-center">
+
+                                        <div class="badge rounded-pill bg-primary px-3 py-2" style="font-size: 0.95rem;"><?php echo (int)($view_patient['appt_stats']['total'] ?? 0); ?></div>
+                                        <div class="small text-muted mt-1" style="font-size: 0.95rem;">Total</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="badge rounded-pill bg-<?php echo ((int)($view_patient['appt_stats']['scheduled'] ?? 0) > 0) ? 'success' : 'secondary'; ?> px-3 py-2" style="font-size: 0.95rem;"><?php echo ((int)($view_patient['appt_stats']['scheduled'] ?? 0) > 0) ? 'Yes' : 'No'; ?></div>
+                                        <div class="small text-muted mt-1" style="font-size: 0.95rem;">Scheduled</div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <p><strong>Blood Type:</strong> <?php echo htmlspecialchars($view_patient['blood_type'] ?: '-'); ?></p>
-                                <p><strong>Allergies:</strong> <?php echo htmlspecialchars($view_patient['allergies'] ?: '-'); ?></p>
-                                <p><strong>Emergency Contact:</strong> <?php echo htmlspecialchars($view_patient['emergency_contact_name'] ?: '-'); ?> (<?php echo htmlspecialchars($view_patient['emergency_contact_phone'] ?: '-'); ?>)</p>
-                                <p><strong>Insurance Provider:</strong> <?php echo htmlspecialchars($view_patient['insurance_provider'] ?: '-'); ?></p>
-                                <p><strong>Insurance Number:</strong> <?php echo htmlspecialchars($view_patient['insurance_number'] ?: '-'); ?></p>
-                                <p><strong>Registered:</strong> <?php echo formatDate($view_patient['created_at']); ?></p>
-                                <hr>
-                                <p><strong>Last Appointment:</strong><br>
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">Medical Information</h6>
+                                <div class="mb-2"><span class="text-secondary" style="font-size: 1.00rem;">Blood Type:</span> <span class="badge bg-danger ms-2" style="font-size: 0.95rem;"><?php echo htmlspecialchars($view_patient['blood_type'] ?: '-'); ?></span></div>
+                                <div class="mb-2" style="font-size: 1.00rem;"><span class="text-secondary" style="font-size: 1.00rem;">Allergies:</span> <span class="fw-semibold text-dark ms-2" style="font-size: 0.95rem;"><?php echo htmlspecialchars($view_patient['allergies'] ?: 'None'); ?></span></div>
+                                
+                                <hr class="my-3">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">Emergency Contact</h6>
+                                <div class="mb-2" style="font-size: 1.00rem;"><span class="text-secondary">Name:</span> <span class="fw-semibold text-dark ms-2" style="font-size: 0.95rem;"><?php echo htmlspecialchars($view_patient['emergency_contact_name'] ?: '-'); ?></span></div>
+                                <div class="mb-2" style="font-size: 1.00rem;"><span class="text-secondary">Phone:</span> <span class="fw-semibold text-dark ms-2" style="font-size: 0.95rem;"><?php echo htmlspecialchars($view_patient['emergency_contact_phone'] ?: '-'); ?></span></div>
+                                
+                                <hr class="my-3">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">Insurance Details</h6>
+                                <div class="mb-2" style="font-size: 1.00rem;"><span class="text-secondary">Provider:</span> <span class="fw-semibold text-dark ms-2" style="font-size: 0.95rem;"><?php echo htmlspecialchars($view_patient['insurance_provider'] ?: '-'); ?></span></div>
+                                <div class="mb-2" style="font-size: 1.00rem;"><span class="text-secondary">Number:</span> <span class="fw-semibold text-dark ms-2" style="font-size: 0.95rem;"><?php echo htmlspecialchars($view_patient['insurance_number'] ?: '-'); ?></span></div>
+                                <div class="mb-2" style="font-size: 1.00rem;"><span class="text-secondary">Registered:</span> <span class="fw-semibold text-dark ms-2" style="font-size: 0.95rem;"><?php echo formatDate($view_patient['created_at']); ?></span></div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">Appointment History</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3" style="background: #f8f9fa;">
+                                    <div class="small text-muted mb-1" style="font-size: 1.00rem;">Last Appointment</div>
                                     <?php if (!empty($view_patient['appt_stats']['last'])): ?>
-                                        <?php echo formatDate($view_patient['appt_stats']['last']['appointment_date']); ?>
-                                        at <?php echo date('g:i A', strtotime($view_patient['appt_stats']['last']['appointment_time'])); ?>
-                                        (<?php echo ucfirst($view_patient['appt_stats']['last']['status']); ?>)
+                                        <div class="fw-semibold" style="font-size: 0.95rem;"><?php echo formatDate($view_patient['appt_stats']['last']['appointment_date']); ?> at <?php echo date('g:i A', strtotime($view_patient['appt_stats']['last']['appointment_time'])); ?></div>
+                                        <span class="badge bg-<?php echo $view_patient['appt_stats']['last']['status'] == 'completed' ? 'success' : 'warning'; ?>"><?php echo ucfirst($view_patient['appt_stats']['last']['status']); ?></span>
                                     <?php else: ?>
-                                        <span class="text-muted">No previous appointments</span>
+                                        <span class="text-muted" style="font-size: 0.95rem;">No previous appointments</span>
                                     <?php endif; ?>
-                                </p>
-                                <p><strong>Next Appointment:</strong><br>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3" style="background: #f8f9fa;">
+                                    <div class="small text-muted mb-1" style="font-size: 1.00rem;">Next Appointment</div>
                                     <?php 
-                                    // Find the most recent future follow_up_date from medical_history
                                     $next_doc_appt = null;
                                     if (!empty($view_patient['medical_history'])) {
                                         foreach ($view_patient['medical_history'] as $history) {
@@ -436,50 +475,55 @@ try {
                                     }
                                     ?>
                                     <?php if ($next_doc_appt): ?>
-                                        <?php echo formatDate($next_doc_appt); ?> <span class="badge bg-info">Set by Doctor</span>
+                                        <div class="fw-semibold" style="font-size: 0.95rem;"><?php echo formatDate($next_doc_appt); ?></div>
+                                        <span class="badge bg-info">Set by Doctor</span>
                                     <?php elseif (!empty($view_patient['appt_stats']['next'])): ?>
-                                        <?php echo formatDate($view_patient['appt_stats']['next']['appointment_date']); ?>
-                                        at <?php echo date('g:i A', strtotime($view_patient['appt_stats']['next']['appointment_time'])); ?>
-                                        (<?php echo ucfirst($view_patient['appt_stats']['next']['status']); ?>)
+                                        <div class="fw-semibold" style="font-size: 0.95rem;"><?php echo formatDate($view_patient['appt_stats']['next']['appointment_date']); ?> at <?php echo date('g:i A', strtotime($view_patient['appt_stats']['next']['appointment_time'])); ?></div>
+                                        <span class="badge bg-success"><?php echo ucfirst($view_patient['appt_stats']['next']['status']); ?></span>
                                     <?php else: ?>
-                                        <span class="text-muted">No upcoming scheduled appointment</span>
+                                        <span class="text-muted" style="font-size: 0.95rem;">No upcoming appointment</span>
                                     <?php endif; ?>
-                                </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Medical History Section -->
-                <div class="card shadow mt-4">
-                    <div class="card-header bg-gradient text-white" style="background: linear-gradient(90deg, #4e54c8 0%, #8f94fb 100%); border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
-                        <h5 class="mb-0"><i class="fas fa-notes-medical me-2"></i> Medical History</h5>
+                <div class="card shadow-lg border-0 mt-4" style="border-radius: 1rem;">
+                    <div class="card-header text-white" style="background: linear-gradient(135deg, #6610f2 0%, #e83e8c 100%); border-radius: 1rem 1rem 0 0;">
+                        <h5 class="mb-0" style="font-family: 'Poppins', 'Segoe UI', sans-serif; font-size: 1.1rem;"><i class="fas fa-notes-medical me-2"></i> Medical History</h5>
                     </div>
-                    <div class="card-body p-4" style="border-radius: 0 0 1rem 1rem; background: #f8f9fa;">
+                    <div class="card-body p-4" style="background: #fff; font-family: 'Poppins', 'Segoe UI', sans-serif;">
                         <?php if (!empty($view_patient['medical_history'])): ?>
-                            <ol class="list-group list-group-numbered">
-                                <?php foreach ($view_patient['medical_history'] as $history): ?>
-                                    <li class="list-group-item mb-3 shadow-sm rounded-3 border-0" style="background: #fff;">
-                                        <div class="fw-bold text-primary mb-1">Date: <?php echo htmlspecialchars($history['visit_date']); ?></div>
-                                        <div class="mb-1"><span class="fw-semibold text-secondary">Doctor:</span> <?php echo htmlspecialchars($history['doctor_name']); ?> <span class="badge bg-light text-dark border ms-2"><?php echo htmlspecialchars($history['specialization']); ?></span></div>
-                                        <div class="mb-1"><span class="fw-semibold text-secondary">Diagnosis:</span> <?php echo nl2br(htmlspecialchars($history['diagnosis'])); ?></div>
-                                        <?php if (!empty($history['treatment'])): ?>
-                                            <div class="mb-1"><span class="fw-semibold text-secondary">Treatment:</span> <?php echo nl2br(htmlspecialchars($history['treatment'])); ?></div>
-                                        <?php endif; ?>
-                                        <?php if (!empty($history['prescribed_medications'])): ?>
-                                            <div class="mb-1"><span class="fw-semibold text-secondary">Medications:</span> <?php echo nl2br(htmlspecialchars($history['prescribed_medications'])); ?></div>
-                                        <?php endif; ?>
-                                        <?php if (!empty($history['notes'])): ?>
-                                            <div class="mb-1"><span class="fw-semibold text-secondary">Notes:</span> <?php echo nl2br(htmlspecialchars($history['notes'])); ?></div>
-                                        <?php endif; ?>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ol>
+                            <?php foreach ($view_patient['medical_history'] as $index => $history): ?>
+                                <div class="p-3 mb-3 rounded-3" style="background: #f8f9fa; border-left: 4px solid #6610f2;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-primary" style="font-size: 0.85rem;">Visit #<?php echo $index + 1; ?></span>
+                                        <span class="text-muted" style="font-size: 0.85rem;"><?php echo htmlspecialchars($history['visit_date']); ?></span>
+                                    </div>
+                                    <div class="mb-2" style="font-size: 0.9rem;"><i class="fas fa-user-md me-2 text-primary"></i><span class="fw-semibold"><?php echo htmlspecialchars($history['doctor_name']); ?></span> <span class="badge bg-light text-dark border ms-1"><?php echo htmlspecialchars($history['specialization']); ?></span></div>
+                                    <div class="mb-2" style="font-size: 0.9rem;"><span class="text-secondary">Diagnosis:</span> <span class="fw-medium text-dark"><?php echo nl2br(htmlspecialchars($history['diagnosis'])); ?></span></div>
+                                    <?php if (!empty($history['treatment'])): ?>
+                                        <div class="mb-2" style="font-size: 0.9rem;"><span class="text-secondary">Treatment:</span> <span class="text-dark"><?php echo nl2br(htmlspecialchars($history['treatment'])); ?></span></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($history['prescribed_medications'])): ?>
+                                        <div class="mb-2" style="font-size: 0.9rem;"><span class="text-secondary">Medications:</span> <span class="text-dark"><?php echo nl2br(htmlspecialchars($history['prescribed_medications'])); ?></span></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($history['notes'])): ?>
+                                        <div class="mb-0" style="font-size: 0.9rem;"><span class="text-secondary">Notes:</span> <span class="text-dark fst-italic"><?php echo nl2br(htmlspecialchars($history['notes'])); ?></span></div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
                         <?php else: ?>
-                            <div class="text-muted">No medical history found for this patient.</div>
+                            <div class="text-center py-4">
+                                <i class="fas fa-file-medical fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-0" style="font-size: 0.95rem;">No medical history found for this patient.</p>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
+                </div><!-- End printableArea -->
                 <?php elseif ($action == 'add' || $action == 'edit'): ?>
                 <!-- Add/Edit Patient Form -->
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -647,6 +691,32 @@ try {
             if (confirm('Are you sure you want to delete the selected patient(s)? This action cannot be undone.')) {
                 document.getElementById('patientsTableForm').submit();
             }
+        }
+
+        function printPatientDetails() {
+            var printContents = document.getElementById('printableArea').innerHTML;
+            var originalContents = document.body.innerHTML;
+            var printWindow = window.open('', '_blank', 'width=800,height=600');
+            printWindow.document.write('<html><head><title>Patient Details</title>');
+            printWindow.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">');
+            printWindow.document.write('<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">');
+            printWindow.document.write('<style>');
+            printWindow.document.write('body { font-family: "Poppins", "Segoe UI", sans-serif; padding: 20px; background: #fff; }');
+            printWindow.document.write('.card { border: 1px solid #ddd !important; box-shadow: none !important; }');
+            printWindow.document.write('.card-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }');
+            printWindow.document.write('.badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }');
+            printWindow.document.write('.patient-avatar { background-color: #007bff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }');
+            printWindow.document.write('@media print { .card-header { background: #007bff !important; } }');
+            printWindow.document.write('</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write('<div class="container">' + printContents + '</div>');
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.onload = function() {
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            };
         }
     </script>
 </body>

@@ -17,12 +17,12 @@ try {
     
     // Pending appointments
     if (hasRole('doctor')) {
-        // Get doctor id from session user id
+        // Get doctor_id from session user_id
         $doctor_user_id = $_SESSION['user_id'];
-        $stmt = $pdo->prepare("SELECT id FROM doctors WHERE user_id = ?");
+        $stmt = $pdo->prepare("SELECT doctor_id FROM doctors WHERE user_id = ?");
         $stmt->execute([$doctor_user_id]);
         $doctor_row = $stmt->fetch();
-        $doctor_id = $doctor_row ? $doctor_row['id'] : 0;
+        $doctor_id = $doctor_row ? $doctor_row['doctor_id'] : null;
         // Count confirmed appointments for this doctor
         $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM appointments WHERE status = 'confirmed' AND doctor_id = ?");
         $stmt->execute([$doctor_id]);
@@ -41,9 +41,9 @@ try {
     $stmt = $pdo->prepare("
         SELECT a.*, p.first_name, p.last_name, p.patient_id, u.full_name as doctor_name
         FROM appointments a
-        JOIN patients p ON a.patient_id = p.id
-        JOIN doctors d ON a.doctor_id = d.id
-        JOIN users u ON d.user_id = u.id
+        JOIN patients p ON a.patient_id = p.patient_id
+        JOIN doctors d ON a.doctor_id = d.doctor_id
+        JOIN users u ON d.user_id = u.user_id
         ORDER BY a.appointment_date DESC, a.appointment_time DESC
         LIMIT 5
     ");
