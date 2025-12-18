@@ -13,12 +13,15 @@ A comprehensive web-based patient management system designed for hospitals, clin
 ### User Roles
 - **Admin**: Full system access, user management, system settings
 - **Doctor**: Patient records, appointments, diagnosis
+- **Receptionist**: Patient and appointment management
 
 ### Key Features
 - Responsive design for mobile and desktop
-- Patient ID auto-generation
+- Patient ID auto-generation (e.g., NET000001)
+- Doctor ID auto-generation (e.g., DOC001)
 - Appointment status management
 - Role-based navigation and permissions
+- No prescriptions module (removed for now)
 - Data validation and security measures
 
 ## Installation
@@ -51,21 +54,17 @@ A comprehensive web-based patient management system designed for hospitals, clin
      define('DB_HOST', 'localhost');
      define('DB_USER', 'root');
      define('DB_PASS', '');
-     define('DB_NAME', 'patient_management');
+     define('DB_NAME', 'netralay_hospital');
      ```
 
 5. **Access the System**
-   - Open your browser and go to: `http://localhost/patient-management/`
+   - Open your browser and go to: `http://localhost/netralay-hospital/`
    - You'll be redirected to the login page
 
 ## Default Login Credentials
 
 ### Administrator
 - **Username**: `admin`
-- **Password**: `password`
-
-### Doctor
-- **Username**: `dr.smith`
 - **Password**: `password`
 
 **⚠️ Important**: Change these default passwords after first login!
@@ -138,15 +137,17 @@ patient-management-system/
 
 ### Main Tables
 
-- **users**: System users and authentication
-- **patients**: Patient information and demographics
-- **doctors**: Doctor profiles and specializations
+- **users**: System users and authentication (user_id as PK)
+- **patients**: Patient information and demographics (patient_id as PK, auto-generated)
+- **doctors**: Doctor profiles and specializations (doctor_id as PK, auto-generated)
 - **appointments**: Appointment scheduling and management
+- **medical_history**: Patient medical records
 
 ### Key Relationships
 
-- Users can be linked to doctor profiles
-- Appointments link patients with doctors
+- Each doctor is linked to a user account (user_id FK)
+- Appointments link patients (patient_id) with doctors (doctor_id)
+- Medical history links patients and doctors
 
 ## Security Features
 
@@ -175,7 +176,7 @@ patient-management-system/
 - Add new tables following the naming convention
 - Include proper foreign key relationships
 - Create appropriate indexes for performance
-- Update triggers for auto-ID generation
+- Update triggers for auto-ID generation (see setup.sql for patient_id and doctor_id)
 
 ## Troubleshooting
 
@@ -238,3 +239,12 @@ For technical support or questions:
 ---
 
 **Note**: This system is designed for demonstration purposes. For production use in healthcare environments, additional security measures, compliance features, and professional testing are required.
+
+---
+
+### Schema Changes (2025)
+- Removed prescriptions table and all related triggers/indexes
+- doctor_id and patient_id are now the only primary keys for doctors and patients
+- doctor_id and patient_id are auto-generated with custom triggers
+- All foreign keys reference correct primary keys (user_id, doctor_id, patient_id)
+- Receptionist role added
