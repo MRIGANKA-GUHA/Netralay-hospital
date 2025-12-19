@@ -31,6 +31,9 @@ body.login-page, body.register-page {
 /* Container fluid adjustments */
 .container-fluid {
     padding-top: 0;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: 100% !important;
 }
 
 /* Main content wrapper */
@@ -41,16 +44,6 @@ body.login-page, body.register-page {
 
 /* Login Page Styles */
 .login-page {
-    background: url('../images/back-img.jpg') no-repeat center center fixed;
-    background-size: cover;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.register-page {
     background: url('../images/back-img.jpg') no-repeat center center fixed;
     background-size: cover;
     min-height: 100vh;
@@ -276,27 +269,59 @@ body.login-page, body.register-page {
     letter-spacing: 1px;
 }
 
+/* Navbar link animation */
+.nav-animate {
+    transition: transform 0.25s cubic-bezier(.4,2,.6,1), box-shadow 0.25s cubic-bezier(.4,2,.6,1), color 0.2s;
+    will-change: transform, box-shadow, color;
+}
+.nav-animate:hover {
+    transform: translateY(-2px) scale(1.08);
+    color: #007bff !important;
+    box-shadow: 0 4px 16px rgba(0,123,255,0.12);
+    background: linear-gradient(90deg, #e3f2fd 0%, #f8f9fa 100%);
+    border-radius: 8px;
+}
+
+/* Active navbar underline */
+.nav-active {
+    position: relative;
+    color: #007bff !important;
+}
+.nav-active::after {
+    content: '';
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #007bff, #00d4ff);
+    border-radius: 2px;
+    transition: width 0.3s;
+}
+
 /* Dashboard Cards */
 .card {
     border: none !important;
-    border-radius: 16px !important;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08) !important;
-    background: #f9fbfd !important;
-    transition: all 0.3s cubic-bezier(.4,2,.6,1) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08) !important;
+    background: #ffffff !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
 }
 
 .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0.25rem 2rem 0 rgba(58, 59, 69, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.1) !important;
 }
 
 .card-header {
-    background: #f4f7fa !important;
-    border-bottom: 1px solid #e9ecef !important;
-    border-radius: 16px 16px 0 0 !important;
-    font-weight: 600 !important;
-    font-size: 1.1rem !important;
-    padding: 1.25rem 1.5rem !important;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border-bottom: 2px solid rgba(0,123,255,0.1) !important;
+    border-radius: 20px 20px 0 0 !important;
+    font-weight: 700 !important;
+    font-size: 1.15rem !important;
+    padding: 1.5rem 1.75rem !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
 }
 
 .card-header h5, .card-header h6 {
@@ -305,9 +330,9 @@ body.login-page, body.register-page {
 }
 
 .card-body {
-    padding-top: 1.5rem !important;
-    background: #f9fbfd !important;
-    border-radius: 0 0 16px 16px !important;
+    padding: 1.75rem !important;
+    background: #ffffff !important;
+    border-radius: 0 0 20px 20px !important;
 }
 
 /* Patient details styling */
@@ -393,24 +418,37 @@ body.login-page, body.register-page {
 /* Tables */
 .table {
     background-color: #fff !important;
-    border-radius: 14px !important;
+    border-radius: 16px !important;
     overflow: hidden !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04) !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
 }
 
 .table th {
     border-top: none !important;
     font-weight: 700 !important;
-    color: #222 !important;
-    background-color: #f4f7fa !important;
+    color: #1a1a2e !important;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
     font-size: 1.05rem !important;
-    letter-spacing: 0.03em !important;
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
+    letter-spacing: 0.05em !important;
+    padding: 1.25rem 1rem !important;
+    text-transform: uppercase;
+    font-size: 0.85rem !important;
+}
+
+.table td {
+    padding: 1rem !important;
+    vertical-align: middle !important;
+}
+
+.table-hover tbody tr {
+    transition: all 0.2s ease;
 }
 
 .table-hover tbody tr:hover {
-    background-color: #eaf4ff !important;
+    background-color: #f0f8ff !important;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0,123,255,0.1) !important;
 }
 
 /* Buttons */
@@ -966,12 +1004,13 @@ body.login-page, body.register-page {
 
 .dashboard-main {
     padding: 0 12px;
+    max-width: 100%;
 }
 
 .dashboard-main .card {
     background: rgba(255,255,255,0.18);
     border-radius: 18px;
-    box-shadow: 0 4px 16px rgba(31,38,135,0.10);
+    box-shadow: 0 4px 16px rgba(31, 38, 135, 0.10);
     color: #222;
     backdrop-filter: blur(8px) saturate(180%);
     -webkit-backdrop-filter: blur(8px) saturate(180%);
@@ -1008,53 +1047,88 @@ body.login-page, body.register-page {
 
 /* Modern Stat Cards */
 .modern-stat-card {
-    background: rgba(255,255,255,0.20) !important;
-    border: 1px solid rgba(255,255,255,0.25) !important;
-    border-radius: 18px !important;
-    backdrop-filter: blur(10px) saturate(180%);
-    -webkit-backdrop-filter: blur(10px) saturate(180%);
-    transition: all 0.3s ease;
-    padding: 8px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+    border: 2px solid rgba(0,123,255,0.08) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08) !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.modern-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #00d4ff);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modern-stat-card:hover::before {
+    opacity: 1;
 }
 
 .modern-stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(31, 38, 135, 0.25) !important;
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 16px 56px rgba(0,0,0,0.18), 0 8px 20px rgba(0,0,0,0.12) !important;
+    border-color: rgba(0,123,255,0.15) !important;
 }
 
 .stat-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #555;
-    letter-spacing: 0.5px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #6c757d;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.8);
 }
 
 .stat-value {
-    color: #222;
-    font-weight: 700;
+    color: #1a1a2e;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .stat-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.modern-stat-card:hover .stat-icon {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.25), 0 6px 16px rgba(0,0,0,0.18);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
 }
 
 .bg-gradient-success {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    box-shadow: 0 8px 24px rgba(17, 153, 142, 0.4);
 }
 
 .bg-gradient-warning {
-    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    box-shadow: 0 8px 24px rgba(240, 147, 251, 0.4);
 }
 
 .bg-gradient-info {
-    background: linear-gradient(135deg, #17a2b8 0%, #6610f2 100%);
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    box-shadow: 0 8px 24px rgba(79, 172, 254, 0.4);
 }
 
 /* Scrollable Table */
@@ -1080,58 +1154,54 @@ body.login-page, body.register-page {
 
 /* Modern Patient Management Enhancements */
 .dashboard-wrapper {
-    padding: 32px 0 32px 0;
-    background: linear-gradient(120deg, #f8fafc 60%, #eaf4ff 100%);
+    padding: 32px 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     min-height: 100vh;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+}
+
+.dashboard-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(74, 144, 226, 0.05) 0%, transparent 50%);
+    pointer-events: none;
 }
 .dashboard-main {
-    padding: 0 12px;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
 }
-.card {
-    border-radius: 18px !important;
-    box-shadow: 0 6px 32px rgba(0,0,0,0.10) !important;
-    background: #f9fbfd !important;
-    border: none !important;
-}
-.card-header {
-    background: #f4f7fa !important;
-    border-bottom: 1px solid #e9ecef !important;
-    border-radius: 18px 18px 0 0 !important;
-    font-weight: 700 !important;
-    font-size: 1.15rem !important;
-    padding: 1.25rem 2rem !important;
-}
-.card-body {
-    background: #f9fbfd !important;
-    border-radius: 0 0 18px 18px !important;
-}
-.table {
-    background-color: #fff !important;
-    border-radius: 14px !important;
-    overflow: hidden !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
-}
-.table th {
-    border-top: none !important;
-    font-weight: 700 !important;
-    color: #222 !important;
-    background-color: #f4f7fa !important;
-    font-size: 1.05rem !important;
-    letter-spacing: 0.03em !important;
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-}
-.table-hover tbody tr:hover {
-    background-color: #eaf4ff !important;
-}
+
 .dashboard-title {
-    color: #222 !important;
-    text-shadow: 0 2px 8px rgba(255,255,255,0.5) !important;
+    color: #1a1a2e !important;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
     letter-spacing: -0.5px !important;
     margin-bottom: 0 !important;
-    font-size: 2.2rem !important;
+    font-size: 2.5rem !important;
     font-weight: 800 !important;
+    position: relative;
 }
+
+.dashboard-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #00d4ff);
+    border-radius: 2px;
+}
+
 .btn-toolbar {
     gap: 0.5rem;
 }

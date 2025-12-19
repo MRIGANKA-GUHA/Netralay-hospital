@@ -222,8 +222,8 @@ try {
                         <div class="col-lg-6 mb-4">
                             <div class="card shadow">
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">
-                                        <i class="fas fa-calendar-alt"></i> Recent Appointments
+                                    <h6 class="m-0 font-weight-bold text-primary" style="font-size: 1.125rem;">
+                                        Recent Appointments
                                     </h6>
                                     <a href="appointments.php" class="btn btn-sm btn-primary">View All</a>
                                 </div>
@@ -271,8 +271,8 @@ try {
                         <div class="col-lg-6 mb-4">
                             <div class="card shadow">
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">
-                                        <i class="fas fa-users"></i> Recent Patients
+                                    <h6 class="m-0 font-weight-bold text-primary" style="font-size: 1.125rem;">
+                                         Recent Patients
                                     </h6>
                                     <a href="patients.php" class="btn btn-sm btn-primary">View All</a>
                                 </div>
@@ -354,8 +354,8 @@ try {
                     <div class="col-12">
                         <div class="card shadow">
                             <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">
-                                    <i class="fas fa-bolt"></i> Quick Actions
+                                <h6 class="m-0 font-weight-bold text-primary" style="font-size: 1.125rem;">
+                                     Quick Actions
                                 </h6>
                             </div>
                             <div class="card-body">

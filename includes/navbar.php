@@ -2,30 +2,32 @@
     <div class="container-fluid d-flex align-items-center justify-content-between">
         <!-- Brand Left -->
         <a class="navbar-brand d-flex align-items-center gap-2" href="dashboard.php">
-            <span class="fw-bold fs-4"><?php echo SITE_NAME; ?></span>
+            <span class="fw-bold fs-4" style="padding-left: 12px; background: linear-gradient(90deg, #007bff, #00d4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent;">
+                <?php echo SITE_NAME; ?>
+            </span>
         </a>
         <!-- Centered Nav Links -->
         <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
             <ul class="navbar-nav mx-auto gap-2">
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="dashboard.php">
-                        <i class="fas fa-tachometer-alt"></i> <span style="font-size: 1.00rem;">Dashboard</span>
+                    <a class="nav-link d-flex align-items-center gap-2 nav-animate <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'nav-active' : ''; ?>" href="dashboard.php">
+                        <span style="font-size: 1.00rem;">Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="patients.php">
-                        <i class="fas fa-users"></i> <span style="font-size: 1.00rem;">Patients</span>
+                    <a class="nav-link d-flex align-items-center gap-2 nav-animate <?php echo basename($_SERVER['PHP_SELF']) == 'patients.php' ? 'nav-active' : ''; ?>" href="patients.php">
+                        <span style="font-size: 1.00rem;">Patients</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="appointments.php">
-                        <i class="fas fa-calendar-alt"></i> <span style="font-size: 1.00rem;">Appointments</span>
+                    <a class="nav-link d-flex align-items-center gap-2 nav-animate <?php echo basename($_SERVER['PHP_SELF']) == 'appointments.php' ? 'nav-active' : ''; ?>" href="appointments.php">
+                         <span style="font-size: 1.00rem;">Appointments</span>
                     </a>
                 </li>
                 <?php if (hasRole('admin')): ?>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2" href="doctors.php">
-                        <i class="fas fa-user-md"></i> <span style="font-size: 1.00rem;">Doctors</span>
+                    <a class="nav-link d-flex align-items-center gap-2 nav-animate <?php echo basename($_SERVER['PHP_SELF']) == 'doctors.php' ? 'nav-active' : ''; ?>" href="doctors.php">
+                        <span style="font-size: 1.00rem;">Doctors</span>
                     </a>
                 </li>
                 <?php endif; ?>

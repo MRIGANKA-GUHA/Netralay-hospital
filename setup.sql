@@ -109,7 +109,7 @@ CREATE TABLE medical_history (
 
 -- Insert default admin user
 INSERT INTO users (username, email, password, full_name, role, phone) VALUES
-('admin', 'admin@netralay_hospital.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Rajesh Sahu', 'admin', '+913423122113');
+('admin', 'admin@netralayhospital.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Mriganka Guha', 'admin', '+913423122113');
 
 
 CREATE INDEX idx_patients_patient_id ON patients(patient_id);
