@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 
                 <button type="submit" class="btn btn-primary w-100" style="padding: 10px 12px;">
-                    <i class="fas fa-sign-in-alt"></i> Sign In
+                     Sign In
                 </button>
             </form>
             

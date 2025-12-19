@@ -222,11 +222,11 @@ try {
                     </h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <?php if (!hasRole('doctor')): ?>
-                        <a href="patients.php?action=add" class="btn btn-primary">
-                            <i class="fas fa-user-plus"></i> Add New Patient
+                        <a href="patients.php?action=add" class="btn btn-primary" style="padding: 0.75rem 1.25rem;">
+                            Add New Patient
                         </a>
-                        <button type="button" class="btn btn-danger" style="background-color:#e53935; border:none; font-weight:bold; margin-left:8px;" onclick="deleteSelectedPatients()">
-                            <i class="fas fa-trash"></i> Delete Patient
+                        <button type="button" class="btn btn-danger" style="background-color:#e53935; border:none; font-weight:bold; margin-left:8px; padding: 0.75rem 1.25rem;" onclick="deleteSelectedPatients()">
+                            Delete Patient
                         </button>
                         
                         <?php endif; ?>
@@ -243,12 +243,12 @@ try {
                                 <input type="text" class="form-control" name="search" placeholder="Search by Patient ID, Name, Phone, or Email..." value="<?php echo htmlspecialchars($search); ?>">
                             </div>
                             <div class="col-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search"></i> Search
+                                <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.25rem;">
+                                    Search
                                 </button>
                                 <?php if ($search): ?>
-                                <a href="patients.php" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> Clear
+                                <a href="patients.php" class="btn btn-secondary" style="padding: 0.75rem 1.25rem;">
+                                     Clear
                                 </a>
                                 <?php endif; ?>
                             </div>
@@ -259,7 +259,7 @@ try {
                 <!-- Patients Table -->
                 <div class="card">
                     <div class="card-header">
-                        <h5><i class="fas fa-list"></i> Patients List (<?php echo number_format($total_patients); ?> total)</h5>
+                        <h5>Patients List (<?php echo number_format($total_patients); ?> total)</h5>
                     </div>
                     <div class="card-body">
                         <?php if (empty($patients)): ?>
@@ -526,144 +526,221 @@ try {
                 </div><!-- End printableArea -->
                 <?php elseif ($action == 'add' || $action == 'edit'): ?>
                 <!-- Add/Edit Patient Form -->
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2 fw-bold mb-0">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-0 pb-2 mb-4">
+                    <h1 class="dashboard-title display-6 fw-bold mb-0 d-flex align-items-center gap-3">   
                         <?php echo $action == 'add' ? 'Add New Patient' : 'Edit Patient'; ?>
                     </h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <a href="patients.php" class="btn btn-secondary">
+                        <a href="patients.php" class="btn btn-secondary" style="padding: 0.75rem 1.25rem;">
                             <i class="fas fa-arrow-left"></i> Back to List
                         </a>
                     </div>
                 </div>
 
                 <?php if ($error): ?>
-                    <div class="alert alert-danger">
+                    <div class="alert alert-danger alert-modern">
                         <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
                     </div>
                 <?php endif; ?>
 
-                <div class="card">
-                    <div class="card-body">
-                        <form method="POST">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="first_name">First Name *</label>
-                                        <input type="text" class="form-control" id="first_name" name="first_name" 
-                                               value="<?php echo htmlspecialchars($patient['first_name'] ?? ''); ?>" required>
+                <div class="card modern-form-card">
+                    <div class="card-body p-4">
+                        <form method="POST" class="modern-form">
+                            <!-- Personal Information Section -->
+                            <div class="form-section mb-4">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">
+                                     Personal Information
+                                </h6>
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label for="first_name" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 First Name <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control form-control-modern" id="first_name" name="first_name" 
+                                                   value="<?php echo htmlspecialchars($patient['first_name'] ?? ''); ?>" 
+                                                   placeholder="Enter first name" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label for="last_name" class="form-label-modern" style="font-size: 1.00rem;">
+                                                Last Name <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control form-control-modern" id="last_name" name="last_name" 
+                                                   value="<?php echo htmlspecialchars($patient['last_name'] ?? ''); ?>" 
+                                                   placeholder="Enter last name" required>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="last_name">Last Name *</label>
-                                        <input type="text" class="form-control" id="last_name" name="last_name" 
-                                               value="<?php echo htmlspecialchars($patient['last_name'] ?? ''); ?>" required>
+
+                                <div class="row g-4 mt-2">
+                                    <div class="col-md-4">
+                                        <div class="form-group-modern">
+                                            <label for="date_of_birth" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Date of Birth <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="date" class="form-control form-control-modern" id="date_of_birth" name="date_of_birth" 
+                                                   value="<?php echo htmlspecialchars($patient['date_of_birth'] ?? ''); ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group-modern">
+                                            <label for="gender" class="form-label-modern" style="font-size: 1.00rem;">
+                                                Gender <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-control form-control-modern" id="gender" name="gender" required>
+                                                <option value="">Select Gender</option>
+                                                <option value="Male" <?php echo (isset($patient['gender']) && $patient['gender'] == 'Male') ? 'selected' : ''; ?>>Male</option>
+                                                <option value="Female" <?php echo (isset($patient['gender']) && $patient['gender'] == 'Female') ? 'selected' : ''; ?>>Female</option>
+                                                <option value="Other" <?php echo (isset($patient['gender']) && $patient['gender'] == 'Other') ? 'selected' : ''; ?>>Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group-modern">
+                                            <label for="blood_type" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Blood Type
+                                            </label>
+                                            <select class="form-control form-control-modern" id="blood_type" name="blood_type">
+                                                <option value="">Select Blood Type</option>
+                                                <?php
+                                                $blood_types = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+                                                foreach ($blood_types as $type):
+                                                ?>
+                                                    <option value="<?php echo $type; ?>" <?php echo (isset($patient['blood_type']) && $patient['blood_type'] == $type) ? 'selected' : ''; ?>><?php echo $type; ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group mb-3">
-                                        <label for="date_of_birth">Date of Birth *</label>
-                                        <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" 
-                                               value="<?php echo htmlspecialchars($patient['date_of_birth'] ?? ''); ?>" required>
+                            <!-- Contact Information Section -->
+                            <div class="form-section mb-4">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">
+                                    Contact Information
+                                </h6>
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label for="phone" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Phone Number <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="tel" class="form-control form-control-modern" id="phone" name="phone" 
+                                                   value="<?php echo htmlspecialchars($patient['phone'] ?? ''); ?>" 
+                                                   placeholder="Enter phone number" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label for="email" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Email Address
+                                            </label>
+                                            <input type="email" class="form-control form-control-modern" id="email" name="email" 
+                                                   value="<?php echo htmlspecialchars($patient['email'] ?? ''); ?>" 
+                                                   placeholder="Enter email address">
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="form-group mb-3">
-                                        <label for="gender">Gender *</label>
-                                        <select class="form-control" id="gender" name="gender" required>
-                                            <option value="">Select Gender</option>
-                                            <option value="Male" <?php echo (isset($patient['gender']) && $patient['gender'] == 'Male') ? 'selected' : ''; ?>>Male</option>
-                                            <option value="Female" <?php echo (isset($patient['gender']) && $patient['gender'] == 'Female') ? 'selected' : ''; ?>>Female</option>
-                                            <option value="Other" <?php echo (isset($patient['gender']) && $patient['gender'] == 'Other') ? 'selected' : ''; ?>>Other</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group mb-3">
-                                        <label for="blood_type">Blood Type</label>
-                                        <select class="form-control" id="blood_type" name="blood_type">
-                                            <option value="">Select Blood Type</option>
-                                            <?php
-                                            $blood_types = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-                                            foreach ($blood_types as $type):
-                                            ?>
-                                                <option value="<?php echo $type; ?>" <?php echo (isset($patient['blood_type']) && $patient['blood_type'] == $type) ? 'selected' : ''; ?>><?php echo $type; ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
+
+                                <div class="row g-4 mt-2">
+                                    <div class="col-12">
+                                        <div class="form-group-modern">
+                                            <label for="address" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Address <span class="text-danger">*</span>
+                                            </label>
+                                            <textarea class="form-control form-control-modern" id="address" name="address" rows="2" 
+                                                      placeholder="Enter full address" required><?php echo htmlspecialchars($patient['address'] ?? ''); ?></textarea>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="phone">Phone Number *</label>
-                                        <input type="tel" class="form-control" id="phone" name="phone" 
-                                               value="<?php echo htmlspecialchars($patient['phone'] ?? ''); ?>" required>
+                            <!-- Emergency Contact Section -->
+                            <div class="form-section mb-4">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">
+                                     Emergency Contact
+                                </h6>
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label for="emergency_contact_name" class="form-label-modern" style="font-size: 1.00rem;">
+                                                Contact Name
+                                            </label>
+                                            <input type="text" class="form-control form-control-modern" id="emergency_contact_name" name="emergency_contact_name" 
+                                                   value="<?php echo htmlspecialchars($patient['emergency_contact_name'] ?? ''); ?>" 
+                                                   placeholder="Enter emergency contact name">
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="email">Email Address</label>
-                                        <input type="email" class="form-control" id="email" name="email" 
-                                               value="<?php echo htmlspecialchars($patient['email'] ?? ''); ?>">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group mb-3">
-                                <label for="address">Address *</label>
-                                <textarea class="form-control" id="address" name="address" rows="2" required><?php echo htmlspecialchars($patient['address'] ?? ''); ?></textarea>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="emergency_contact_name">Emergency Contact Name</label>
-                                        <input type="text" class="form-control" id="emergency_contact_name" name="emergency_contact_name" 
-                                               value="<?php echo htmlspecialchars($patient['emergency_contact_name'] ?? ''); ?>">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="emergency_contact_phone">Emergency Contact Phone</label>
-                                        <input type="tel" class="form-control" id="emergency_contact_phone" name="emergency_contact_phone" 
-                                               value="<?php echo htmlspecialchars($patient['emergency_contact_phone'] ?? ''); ?>">
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label for="emergency_contact_phone" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Contact Phone
+                                            </label>
+                                            <input type="tel" class="form-control form-control-modern" id="emergency_contact_phone" name="emergency_contact_phone" 
+                                                   value="<?php echo htmlspecialchars($patient['emergency_contact_phone'] ?? ''); ?>" 
+                                                   placeholder="Enter emergency contact phone">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="form-group mb-3">
-                                <label for="allergies">Allergies</label>
-                                <textarea class="form-control" id="allergies" name="allergies" rows="2" placeholder="List any known allergies..."><?php echo htmlspecialchars($patient['allergies'] ?? ''); ?></textarea>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="insurance_provider">Insurance Provider</label>
-                                        <input type="text" class="form-control" id="insurance_provider" name="insurance_provider" 
-                                               value="<?php echo htmlspecialchars($patient['insurance_provider'] ?? ''); ?>">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="insurance_number">Insurance Number</label>
-                                        <input type="text" class="form-control" id="insurance_number" name="insurance_number" 
-                                               value="<?php echo htmlspecialchars($patient['insurance_number'] ?? ''); ?>">
+                            <!-- Medical Information Section -->
+                            <div class="form-section mb-4">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">
+                                     Medical Information
+                                </h6>
+                                <div class="row g-4">
+                                    <div class="col-12">
+                                        <div class="form-group-modern">
+                                            <label for="allergies" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Allergies
+                                            </label>
+                                            <textarea class="form-control form-control-modern" id="allergies" name="allergies" rows="2" 
+                                                      placeholder="List any known allergies..."><?php echo htmlspecialchars($patient['allergies'] ?? ''); ?></textarea>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> <?php echo $action == 'add' ? 'Add Patient' : 'Update Patient'; ?>
+                            <!-- Insurance Information Section -->
+                            <div class="form-section mb-4">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">
+                                     Insurance Information
+                                </h6>
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label for="insurance_provider" class="form-label-modern" style="font-size: 1.00rem;">
+                                                Insurance Provider
+                                            </label>
+                                            <input type="text" class="form-control form-control-modern" id="insurance_provider" name="insurance_provider" 
+                                                   value="<?php echo htmlspecialchars($patient['insurance_provider'] ?? ''); ?>" 
+                                                   placeholder="Enter insurance provider">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label for="insurance_number" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Insurance Number
+                                            </label>
+                                            <input type="text" class="form-control form-control-modern" id="insurance_number" name="insurance_number" 
+                                                   value="<?php echo htmlspecialchars($patient['insurance_number'] ?? ''); ?>" 
+                                                   placeholder="Enter insurance number">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions mt-5 pt-4 border-top">
+                                <button type="submit" class="btn btn-primary btn-lg px-5" style="padding: 0.75rem 1.25rem;">
+                                    <?php echo $action == 'add' ? 'Add Patient' : 'Update Patient'; ?>
                                 </button>
-                                <a href="patients.php" class="btn btn-secondary">Cancel</a>
+                                <a href="patients.php" class="btn btn-secondary btn-lg px-5 ms-2" style="padding: 0.75rem 1.25rem;">
+                                    Cancel
+                                </a>
                             </div>
                         </form>
                     </div>

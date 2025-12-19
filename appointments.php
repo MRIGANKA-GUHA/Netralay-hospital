@@ -15,8 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     if ($action == 'add') {
         // Add new appointment
-        $patient_id = (int)$_POST['patient_id'];
-        $doctor_id = (int)$_POST['doctor_id'];
+        $patient_id = sanitize($_POST['patient_id']);
+        $doctor_id = sanitize($_POST['doctor_id']);
         $appointment_date = sanitize($_POST['appointment_date']);
         $appointment_time = sanitize($_POST['appointment_time']);
         $reason = sanitize($_POST['reason']);
@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 // Get doctors for dropdown
 try {
-    $doctors_stmt = $pdo->query("SELECT d.id, d.doctor_id, u.full_name, d.specialization FROM doctors d JOIN users u ON d.user_id = u.id WHERE u.is_active = 1 ORDER BY u.full_name");
+    $doctors_stmt = $pdo->query("SELECT d.doctor_id, u.full_name, d.specialization FROM doctors d JOIN users u ON d.user_id = u.user_id WHERE u.is_active = 1 ORDER BY u.full_name");
     $doctors = $doctors_stmt->fetchAll();
 } catch (PDOException $e) {
     $doctors = [];
@@ -119,8 +119,17 @@ try {
         // Doctors should not schedule appointments (for now)
         $patients = [];
     } else {
-        // For admin and other roles, show all patients
-        $patients_stmt = $pdo->query("SELECT id, patient_id, first_name, last_name FROM patients ORDER BY first_name, last_name");
+        // For admin and other roles, show only patients with completed or cancelled appointments
+        $patients_stmt = $pdo->prepare(
+            "SELECT DISTINCT p.patient_id, p.first_name, p.last_name 
+             FROM patients p
+             LEFT JOIN appointments a ON p.patient_id = a.patient_id
+             WHERE NOT EXISTS (
+                 SELECT 1 FROM appointments a2 WHERE a2.patient_id = p.patient_id AND a2.status IN ('scheduled', 'confirmed')
+             )
+             ORDER BY a.created_at DESC, p.first_name, p.last_name"
+        );
+        $patients_stmt->execute();
         $patients = $patients_stmt->fetchAll();
     }
 } catch (PDOException $e) {
@@ -158,10 +167,10 @@ if ($date_filter) {
 if (hasRole('doctor')) {
     // Only show appointments for this doctor
     $doctor_user_id = $_SESSION['user_id'];
-    $stmt = $pdo->prepare("SELECT d.id FROM doctors d WHERE d.user_id = ?");
+    $stmt = $pdo->prepare("SELECT d.doctor_id FROM doctors d WHERE d.user_id = ?");
     $stmt->execute([$doctor_user_id]);
     $doctor_row = $stmt->fetch();
-    $doctor_id = $doctor_row ? $doctor_row['id'] : 0;
+    $doctor_id = $doctor_row ? $doctor_row['doctor_id'] : '';
     $where_conditions[] = "a.doctor_id = ?";
     $params[] = $doctor_id;
     // If no explicit status filter, only show confirmed appointments for doctor
@@ -181,9 +190,9 @@ $where_clause = !empty($where_conditions) ? "WHERE " . implode(" AND ", $where_c
 // Get appointments with patient and doctor info
 try {
     $count_query = "SELECT COUNT(*) as total FROM appointments a 
-                    JOIN patients p ON a.patient_id = p.id 
-                    JOIN doctors d ON a.doctor_id = d.id 
-                    JOIN users u ON d.user_id = u.id 
+                    JOIN patients p ON a.patient_id = p.patient_id 
+                    JOIN doctors d ON a.doctor_id = d.doctor_id 
+                    JOIN users u ON d.user_id = u.user_id 
                     $where_clause";
     $count_stmt = $pdo->prepare($count_query);
     $count_stmt->execute($params);
@@ -193,11 +202,11 @@ try {
     $query = "SELECT a.*, p.patient_id, p.first_name, p.last_name, p.phone, 
                      d.doctor_id, u.full_name as doctor_name, d.specialization
               FROM appointments a
-              JOIN patients p ON a.patient_id = p.id
-              JOIN doctors d ON a.doctor_id = d.id
-              JOIN users u ON d.user_id = u.id
+              JOIN patients p ON a.patient_id = p.patient_id
+              JOIN doctors d ON a.doctor_id = d.doctor_id
+              JOIN users u ON d.user_id = u.user_id
               $where_clause
-              ORDER BY a.created_at ASC
+              ORDER BY a.created_at DESC
               LIMIT $limit OFFSET $offset";
     
     $stmt = $pdo->prepare($query);
@@ -231,14 +240,14 @@ $selected_patient_id = $_GET['patient_id'] ?? '';
             <main class="dashboard-main">
                 <?php if ($action == 'list'): ?>
                 <!-- Appointments List -->
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-0 pb-2 mb-3 border-bottom">
                     <h1 class="dashboard-title display-6 fw-bold mb-0 d-flex align-items-center gap-2">
                         Appointments Management
                     </h1>
                     <?php if (!hasRole('doctor')): ?>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <a href="appointments.php?action=add" class="btn btn-primary">
-                            <i class="fas fa-calendar-plus"></i> Schedule Appointment
+                        <a href="appointments.php?action=add" class="btn btn-primary" style="padding: 0.75rem 1.25rem;">
+                            Schedule Appointment
                         </a>
                     </div>
                     <?php endif; ?>
@@ -247,6 +256,7 @@ $selected_patient_id = $_GET['patient_id'] ?? '';
                 <?php displayAlert(); ?>
 
                 <!-- Search and Filter -->
+                <?php if (!hasRole('doctor')): ?>
                 <div class="card mb-4">
                     <div class="card-body">
                         <form method="GET" class="row g-3">
@@ -270,39 +280,40 @@ $selected_patient_id = $_GET['patient_id'] ?? '';
                                 <select class="form-control" name="doctor">
                                     <option value="">All Doctors</option>
                                     <?php foreach ($doctors as $doctor): ?>
-                                        <option value="<?php echo $doctor['id']; ?>" <?php echo $doctor_filter == $doctor['id'] ? 'selected' : ''; ?>>
+                                        <option value="<?php echo $doctor['doctor_id']; ?>" <?php echo $doctor_filter == $doctor['doctor_id'] ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($doctor['full_name'] . ' - ' . $doctor['specialization']); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="fas fa-search"></i> Filter
+                                <button type="submit" class="btn btn-primary w-100" style="margin-top: 0px; padding: 0.75rem;">
+                                     Filter
                                 </button>
                             </div>
                         </form>
                         <?php if ($search || $status_filter || $date_filter || $doctor_filter): ?>
                         <div class="mt-2">
-                            <a href="appointments.php" class="btn btn-secondary btn-sm">
-                                <i class="fas fa-times"></i> Clear Filters
+                            <a href="appointments.php" class="btn btn-secondary btn-sm" style="padding: 0.75rem 1.25rem;">
+                                 Clear Filters
                             </a>
                         </div>
                         <?php endif; ?>
                     </div>
                 </div>
+                <?php endif; ?>
 
                 <!-- Appointments Table -->
                 <div class="card">
                     <div class="card-header">
-                        <h5><i class="fas fa-list"></i> Appointments (<?php echo number_format($total_appointments); ?> total)</h5>
+                        <h5> Appointments (<?php echo number_format($total_appointments); ?> total)</h5>
                     </div>
                     <div class="card-body">
                         <?php if (empty($appointments)): ?>
                             <div class="text-center py-4">
                                 <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
                                 <h5 class="text-muted">No appointments found</h5>
-                                <p>Start by <a href="appointments.php?action=add">scheduling your first appointment</a></p>
+    
                             </div>
                         <?php else: ?>
                             <div class="table-responsive">
@@ -416,98 +427,135 @@ $selected_patient_id = $_GET['patient_id'] ?? '';
 
                 <?php elseif ($action == 'add'): ?>
                 <!-- Schedule Appointment Form -->
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-0 pb-2 mb-3 border-bottom">
                     <h1 class="dashboard-title display-6 fw-bold mb-0 d-flex align-items-center gap-2">
                         Schedule New Appointment
                     </h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
-                        <a href="appointments.php" class="btn btn-secondary">
+                        <a href="appointments.php" class="btn btn-secondary" style="padding: 0.75rem 1.5rem;">
                             <i class="fas fa-arrow-left"></i> Back to List
                         </a>
                     </div>
                 </div>
 
                 <?php if ($error): ?>
-                    <div class="alert alert-danger">
+                    <div class="alert alert-danger alert-modern">
                         <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
                     </div>
                 <?php endif; ?>
 
-                <div class="card">
-                    <div class="card-body">
-                        <form method="POST" id="appointmentForm">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="patient_id">Patient *</label>
-                                        <select class="form-control" id="patient_id" name="patient_id" required>
-                                            <option value="">Select Patient</option>
-                                            <?php foreach ($patients as $patient): ?>
-                                                <option value="<?php echo $patient['id']; ?>" <?php echo ($selected_patient_id == $patient['id']) ? 'selected' : ''; ?>>
-                                                    <?php echo htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name'] . ' (' . $patient['patient_id'] . ')'); ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
+                <div class="card modern-form-card">
+                    <div class="card-body p-4">
+                        <form method="POST" id="appointmentForm" class="modern-form">
+                            <!-- Patient & Doctor Selection Section -->
+                            <div class="form-section mb-4">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">
+                                     Patient & Doctor Selection
+                                </h6>
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label for="patient_id" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Patient <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-control form-control-modern" id="patient_id" name="patient_id" required>
+                                                <option value="">Select Patient</option>
+                                                <?php foreach ($patients as $patient): ?>
+                                                    <option value="<?php echo $patient['patient_id']; ?>" <?php echo ($selected_patient_id == $patient['patient_id']) ? 'selected' : ''; ?>>
+                                                        <?php echo htmlspecialchars($patient['first_name'] . ' ' . $patient['last_name'] . ' (' . $patient['patient_id'] . ')'); ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="doctor_id">Doctor *</label>
-                                        <select class="form-control" id="doctor_id" name="doctor_id" required>
-                                            <option value="">Select Doctor</option>
-                                            <?php foreach ($doctors as $doctor): ?>
-                                                <option value="<?php echo $doctor['id']; ?>">
-                                                    <?php echo htmlspecialchars($doctor['full_name'] . ' - ' . $doctor['specialization']); ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label for="doctor_id" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Doctor <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-control form-control-modern" id="doctor_id" name="doctor_id" required>
+                                                <option value="">Select Doctor</option>
+                                                <?php foreach ($doctors as $doctor): ?>
+                                                    <option value="<?php echo $doctor['doctor_id']; ?>">
+                                                        <?php echo htmlspecialchars($doctor['full_name'] . ' - ' . $doctor['specialization']); ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="appointment_date">Appointment Date *</label>
-                                        <input type="date" class="form-control" id="appointment_date" name="appointment_date" 
-                                               min="<?php echo date('Y-m-d'); ?>" required>
+                            <!-- Appointment Schedule Section -->
+                            <div class="form-section mb-4">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">
+                                     Appointment Schedule
+                                </h6>
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label for="appointment_date" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Appointment Date <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="date" class="form-control form-control-modern" id="appointment_date" name="appointment_date" 
+                                                   min="<?php echo date('Y-m-d'); ?>" required>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-3">
-                                        <label for="appointment_time">Appointment Time *</label>
-                                        <select class="form-control" id="appointment_time" name="appointment_time" required>
-                                            <option value="">Select Time</option>
-                                            <?php
-                                            // Generate time slots from 9 AM to 5 PM
-                                            for ($hour = 9; $hour <= 17; $hour++) {
-                                                for ($minute = 0; $minute < 60; $minute += 30) {
-                                                    $time = sprintf('%02d:%02d', $hour, $minute);
-                                                    $display_time = date('g:i A', strtotime($time));
-                                                    echo "<option value=\"$time\">$display_time</option>";
+                                    <div class="col-md-6">
+                                        <div class="form-group-modern">
+                                            <label for="appointment_time" class="form-label-modern" style="font-size: 1.00rem;">
+                                                Appointment Time <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-control form-control-modern" id="appointment_time" name="appointment_time" required>
+                                                <option value="">Select Time</option>
+                                                <?php
+                                                // Generate time slots from 9 AM to 5 PM
+                                                for ($hour = 9; $hour <= 17; $hour++) {
+                                                    for ($minute = 0; $minute < 60; $minute += 30) {
+                                                        $time = sprintf('%02d:%02d', $hour, $minute);
+                                                        $display_time = date('g:i A', strtotime($time));
+                                                        echo "<option value=\"$time\">$display_time</option>";
+                                                    }
                                                 }
-                                            }
-                                            ?>
-                                        </select>
+                                                ?>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="form-group mb-3">
-                                <label for="reason">Reason for Visit</label>
-                                <textarea class="form-control" id="reason" name="reason" rows="2" placeholder="Brief description of the reason for this appointment..."></textarea>
+                            <!-- Visit Details Section -->
+                            <div class="form-section mb-4">
+                                <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 1.20rem; letter-spacing: 1px;">
+                                     Visit Details
+                                </h6>
+                                <div class="row g-4">
+                                    <div class="col-12">
+                                        <div class="form-group-modern">
+                                            <label for="reason" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Reason for Visit
+                                            </label>
+                                            <textarea class="form-control form-control-modern" id="reason" name="reason" rows="3" 
+                                                      placeholder="Brief description of the reason for this appointment..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group-modern">
+                                            <label for="notes" class="form-label-modern" style="font-size: 1.00rem;">
+                                                 Additional Notes
+                                            </label>
+                                            <textarea class="form-control form-control-modern" id="notes" name="notes" rows="3" 
+                                                      placeholder="Any additional notes or special instructions..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="form-group mb-3">
-                                <label for="notes">Additional Notes</label>
-                                <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Any additional notes or special instructions..."></textarea>
-                            </div>
-
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-calendar-plus"></i> Schedule Appointment
+                            <div class="form-group mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg px-5" style="padding: 0.75rem 1.5rem;">
+                                     Schedule Appointment
                                 </button>
-                                <a href="appointments.php" class="btn btn-secondary">Cancel</a>
+                                <a href="appointments.php" class="btn btn-secondary btn-lg px-4 ms-2" style="padding: 0.75rem 1.5rem;">Cancel</a>
                             </div>
                         </form>
                     </div>
@@ -515,7 +563,7 @@ $selected_patient_id = $_GET['patient_id'] ?? '';
                 <?php elseif ($action == 'view' && isset($_GET['id'])): ?>
 <?php
     $view_id = (int)$_GET['id'];
-    $stmt = $pdo->prepare("SELECT a.*, p.patient_id, p.first_name, p.last_name, p.phone, d.doctor_id, u.full_name as doctor_name, d.specialization FROM appointments a JOIN patients p ON a.patient_id = p.id JOIN doctors d ON a.doctor_id = d.id JOIN users u ON d.user_id = u.id WHERE a.id = ?");
+    $stmt = $pdo->prepare("SELECT a.*, p.patient_id, p.first_name, p.last_name, p.phone, d.doctor_id, u.full_name as doctor_name, d.specialization FROM appointments a JOIN patients p ON a.patient_id = p.patient_id JOIN doctors d ON a.doctor_id = d.doctor_id JOIN users u ON d.user_id = u.user_id WHERE a.id = ?");
     $stmt->execute([$view_id]);
     $appointment = $stmt->fetch();
 ?>

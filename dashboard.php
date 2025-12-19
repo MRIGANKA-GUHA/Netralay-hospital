@@ -311,8 +311,8 @@ try {
                         <div class="col-lg-12 mb-4">
                             <div class="card shadow">
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">
-                                        <i class="fas fa-users"></i> Recent Patients
+                                    <h6 class="m-0 font-weight-bold text-primary" style="font-size: 1.125rem;">
+                                         Recent Patients
                                     </h6>
                                     <a href="patients.php" class="btn btn-sm btn-primary">View All</a>
                                 </div>
