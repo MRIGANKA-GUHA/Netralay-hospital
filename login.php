@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <label class="form-check-label" for="remember" style="font-size: 0.85rem;">Remember me</label>
                         </div>
                         <div>
-                            <a href="#" style="font-size: 0.85rem; color: #007bff; text-decoration: none;">Forgot Password?</a>
+                            <a href="forgot-password.php" style="font-size: 0.85rem; color: #007bff; text-decoration: none;">Forgot Password?</a>
                         </div>
                     </div>
                 </div>
