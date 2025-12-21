@@ -15,5 +15,5 @@ if (ini_get("session.use_cookies")) {
 session_destroy();
 
 showAlert('You have been logged out successfully', 'success');
-redirect('login.php');
+redirect('index.php');
 ?>

@@ -30,6 +30,11 @@
                         <span style="font-size: 1.00rem;">Doctors</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 nav-animate <?php echo basename($_SERVER['PHP_SELF']) == 'enquiries-list.php' ? 'nav-active' : ''; ?>" href="enquiries-list.php">
+                        <span style="font-size: 1.00rem;">Enquiries</span>
+                    </a>
+                </li>
                 <?php endif; ?>
             </ul>
         </div>

@@ -67,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .login-header h1 {
             text-transform: uppercase;
             letter-spacing: 0.08em;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -120,7 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 <button type="submit" class="btn btn-primary w-100" style="padding: 10px 12px;">
                      Sign In
-                </button>
+                 </button>
+                 <a href="index.php" class="btn btn-outline-secondary w-100 mt-2" style="padding: 10px 12px;">Back</a>
             </form>
             
             

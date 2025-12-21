@@ -107,3 +107,14 @@ CREATE INDEX idx_appointments_status ON appointments(status);
 CREATE INDEX idx_medical_history_patient ON medical_history(patient_id);
 CREATE INDEX idx_medical_history_date ON medical_history(visit_date);
 
+-- Enquiries table for contact/enquiry form submissions
+CREATE TABLE enquiries (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    subject VARCHAR(150) NOT NULL,
+    message TEXT NOT NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
