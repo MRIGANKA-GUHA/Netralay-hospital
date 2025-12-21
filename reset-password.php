@@ -12,14 +12,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = 'Please fill in all required fields.';
     } else {
         try {
+            // Check users table
             $stmt = $pdo->prepare("SELECT * FROM users WHERE reset_token = ? AND reset_token_expiry > NOW()");
             $stmt->execute([$token]);
             $user = $stmt->fetch();
 
-            if ($user) {
+            // Check patients table if not found in users
+            if (!$user) {
+                $stmt = $pdo->prepare("SELECT * FROM patients WHERE reset_token = ? AND reset_token_expiry > NOW()");
+                $stmt->execute([$token]);
+                $patient = $stmt->fetch();
+            } else {
+                $patient = false;
+            }
+
+            if ($user || $patient) {
                 $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare("UPDATE users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE reset_token = ?");
-                $stmt->execute([$hashed_password, $token]);
+                if ($user) {
+                    $stmt = $pdo->prepare("UPDATE users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE reset_token = ?");
+                    $stmt->execute([$hashed_password, $token]);
+                } else {
+                    $stmt = $pdo->prepare("UPDATE patients SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE reset_token = ?");
+                    $stmt->execute([$hashed_password, $token]);
+                }
                 $success = 'Password reset successfully.';
             } else {
                 $error = 'Invalid or expired token.';

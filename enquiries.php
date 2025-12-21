@@ -13,14 +13,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = [];
     if (empty($full_name)) $errors[] = 'Full name is required.';
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Valid email is required.';
-    if (empty($phone)) $errors[] = 'Phone is required.';
+    if (empty($phone)) {
+        $errors[] = 'Phone is required.';
+    } elseif (!preg_match('/^[0-9]+$/', $phone)) {
+        $errors[] = 'Phone number must contain only digits.';
+    }
     if (empty($subject)) $errors[] = 'Subject is required.';
     if (empty($message)) $errors[] = 'Message is required.';
 
     if (empty($errors)) {
         try {
-            $stmt = $pdo->prepare("INSERT INTO enquiries (full_name, email, phone, subject, message) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$full_name, $email, $phone, $subject, $message]);
+            // Generate custom enquiry_id
+            $enquiry_id = generateId('ENQ', 'enquiries', 'enquiry_id', 5);
+            $stmt = $pdo->prepare("INSERT INTO enquiries (enquiry_id, full_name, email, phone, subject, message) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$enquiry_id, $full_name, $email, $phone, $subject, $message]);
             $success = true;
         } catch (PDOException $e) {
             $errors[] = 'Failed to submit enquiry. Please try again later.';

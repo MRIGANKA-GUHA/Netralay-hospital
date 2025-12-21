@@ -11,10 +11,10 @@ $error = '';
 $success = '';
 
 // Handle delete action
-if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id'])) {
+if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['enquiry_id'])) {
     try {
-        $stmt = $pdo->prepare("DELETE FROM enquiries WHERE id = ?");
-        $stmt->execute([$_GET['id']]);
+        $stmt = $pdo->prepare("DELETE FROM enquiries WHERE enquiry_id = ?");
+        $stmt->execute([$_GET['enquiry_id']]);
         $success = 'Enquiry deleted successfully!';
     } catch (PDOException $e) {
         $error = 'Error deleting enquiry: ' . $e->getMessage();
@@ -24,7 +24,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
 // Fetch all enquiries
 $enquiries = [];
 try {
-    $stmt = $pdo->query("SELECT * FROM enquiries ORDER BY submitted_at DESC");
+    $stmt = $pdo->query("SELECT * FROM enquiries ORDER BY enquiry_id ASC");
     $enquiries = $stmt->fetchAll();
 } catch (PDOException $e) {
     $error = 'Error fetching enquiries: ' . $e->getMessage();
@@ -69,20 +69,20 @@ try {
                 </div>
             <?php endif; ?>
             
-            <div class="card modern-card shadow-sm">
+            <div class="card shadow-sm" style="border-radius: 12px; overflow: hidden;">
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover modern-table mb-0">
-                            <thead>
+                        <table class="table table-hover mb-0" style="border-radius: 12px;">
+                            <thead class="table-dark">
                                 <tr>
-                                    <th style="width: 5%;">ID</th>
-                                    <th style="width: 15%;">Full Name</th>
-                                    <th style="width: 15%;">Email</th>
-                                    <th style="width: 10%;">Phone</th>
-                                    <th style="width: 15%;">Subject</th>
-                                    <th style="width: 25%;">Message</th>
-                                    <th style="width: 10%;">Submitted</th>
-                                    <th style="width: 5%;" class="text-center">Actions</th>
+                                    <th style="width: 10%; padding: 1rem 0.75rem;">Enquiry ID</th>
+                                    <th style="width: 15%; padding: 1rem 0.75rem;">Full Name</th>
+                                    <th style="width: 15%; padding: 1rem 0.75rem;">Email</th>
+                                    <th style="width: 10%; padding: 1rem 0.75rem;">Phone</th>
+                                    <th style="width: 15%; padding: 1rem 0.75rem;">Subject</th>
+                                    <th style="width: 25%; padding: 1rem 0.75rem;">Message</th>
+                                    <th style="width: 10%; padding: 1rem 0.75rem;">Submitted</th>
+                                    <th style="width: 5%; padding: 1rem 0.75rem;" class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -95,37 +95,37 @@ try {
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($enquiries as $enquiry): ?>
-                                        <tr>
-                                            <td class="fw-bold"><?php echo htmlspecialchars($enquiry['id']); ?></td>
-                                            <td><?php echo htmlspecialchars($enquiry['full_name']); ?></td>
-                                            <td>
-                                                <a href="mailto:<?php echo htmlspecialchars($enquiry['email']); ?>" class="text-decoration-none">
+                                        <tr style="border-bottom: 1px solid #e9ecef;">
+                                            <td class="fw-bold" style="padding: 1rem 0.75rem; vertical-align: middle;"><?php echo htmlspecialchars($enquiry['enquiry_id']); ?></td>
+                                            <td style="padding: 1rem 0.75rem; vertical-align: middle;"><?php echo htmlspecialchars($enquiry['full_name']); ?></td>
+                                            <td style="padding: 1rem 0.75rem; vertical-align: middle;">
+                                                <a href="mailto:<?php echo htmlspecialchars($enquiry['email']); ?>" class="text-decoration-none text-primary">
                                                     <?php echo htmlspecialchars($enquiry['email']); ?>
                                                 </a>
                                             </td>
-                                            <td>
-                                                <a href="tel:<?php echo htmlspecialchars($enquiry['phone']); ?>" class="text-decoration-none">
+                                            <td style="padding: 1rem 0.75rem; vertical-align: middle;">
+                                                <a href="tel:<?php echo htmlspecialchars($enquiry['phone']); ?>" class="text-decoration-none text-success">
                                                     <?php echo htmlspecialchars($enquiry['phone']); ?>
                                                 </a>
                                             </td>
-                                            <td><?php echo htmlspecialchars($enquiry['subject']); ?></td>
-                                            <td>
-                                                <div style="max-height: 60px; overflow-y: auto; font-size: 0.9rem;">
+                                            <td style="padding: 1rem 0.75rem; vertical-align: middle;"><?php echo htmlspecialchars($enquiry['subject']); ?></td>
+                                            <td style="padding: 1rem 0.75rem; vertical-align: middle;">
+                                                <div style="max-height: 60px; overflow-y: auto; font-size: 0.9rem; background: #f8f9fa; padding: 0.5rem; border-radius: 6px;">
                                                     <?php echo nl2br(htmlspecialchars($enquiry['message'])); ?>
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td style="padding: 1rem 0.75rem; vertical-align: middle;">
                                                 <small class="text-muted">
                                                     <?php echo date('M d, Y', strtotime($enquiry['submitted_at'])); ?><br>
                                                     <?php echo date('h:i A', strtotime($enquiry['submitted_at'])); ?>
                                                 </small>
                                             </td>
-                                            <td class="text-center">
+                                            <td class="text-center" style="padding: 1rem 0.75rem; vertical-align: middle;">
                                                 <div class="btn-group btn-group-sm">
-                                                    <button type="button" class="btn btn-info btn-action-icon" data-bs-toggle="modal" data-bs-target="#viewModal<?php echo $enquiry['id']; ?>" title="View Details">
+                                                    <button type="button" class="btn btn-info btn-action-icon" data-bs-toggle="modal" data-bs-target="#viewModal<?php echo $enquiry['enquiry_id']; ?>" title="View Details">
                                                         <i class="fas fa-eye"></i>
                                                     </button>
-                                                    <a href="?action=delete&id=<?php echo $enquiry['id']; ?>" 
+                                                    <a href="?action=delete&enquiry_id=<?php echo $enquiry['enquiry_id'];  ?>" 
                                                        class="btn btn-danger btn-action-icon" 
                                                        onclick="return confirm('Are you sure you want to delete this enquiry?')" 
                                                        title="Delete">
@@ -134,70 +134,79 @@ try {
                                                 </div>
                                             </td>
                                         </tr>
-                                        
-                                        <!-- View Modal -->
-                                        <div class="modal fade" id="viewModal<?php echo $enquiry['id']; ?>" tabindex="-1">
-                                            <div class="modal-dialog modal-lg">
-                                                <div class="modal-content">
-                                                    <div class="modal-header bg-primary text-white">
-                                                        <h5 class="modal-title">Enquiry Details - #<?php echo $enquiry['id']; ?></h5>
-                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div class="row mb-3">
-                                                            <div class="col-md-6">
-                                                                <label class="fw-bold text-muted small">Full Name</label>
-                                                                <p class="mb-0"><?php echo htmlspecialchars($enquiry['full_name']); ?></p>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <label class="fw-bold text-muted small">Email</label>
-                                                                <p class="mb-0">
-                                                                    <a href="mailto:<?php echo htmlspecialchars($enquiry['email']); ?>">
-                                                                        <?php echo htmlspecialchars($enquiry['email']); ?>
-                                                                    </a>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row mb-3">
-                                                            <div class="col-md-6">
-                                                                <label class="fw-bold text-muted small">Phone</label>
-                                                                <p class="mb-0">
-                                                                    <a href="tel:<?php echo htmlspecialchars($enquiry['phone']); ?>">
-                                                                        <?php echo htmlspecialchars($enquiry['phone']); ?>
-                                                                    </a>
-                                                                </p>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <label class="fw-bold text-muted small">Submitted At</label>
-                                                                <p class="mb-0"><?php echo date('M d, Y h:i A', strtotime($enquiry['submitted_at'])); ?></p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label class="fw-bold text-muted small">Subject</label>
-                                                            <p class="mb-0"><?php echo htmlspecialchars($enquiry['subject']); ?></p>
-                                                        </div>
-                                                        <div>
-                                                            <label class="fw-bold text-muted small">Message</label>
-                                                            <div class="border rounded p-3 bg-light">
-                                                                <?php echo nl2br(htmlspecialchars($enquiry['message'])); ?>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <a href="mailto:<?php echo htmlspecialchars($enquiry['email']); ?>" class="btn btn-primary">
-                                                            <i class="fas fa-reply"></i> Reply via Email
-                                                        </a>
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Modals Section -->
+<?php if (!empty($enquiries)): ?>
+    <?php foreach ($enquiries as $enquiry): ?>
+        <!-- View Modal -->
+        <div class="modal fade" id="viewModal<?php echo $enquiry['enquiry_id']; ?>" tabindex="-1" aria-labelledby="viewModalLabel<?php echo $enquiry['enquiry_id']; ?>" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #007bff, #0056b3); border: none; padding: 1.5rem;">
+                        <h5 class="modal-title text-white fw-bold" id="viewModalLabel<?php echo $enquiry['enquiry_id']; ?>">Enquiry Details - #<?php echo $enquiry['enquiry_id']; ?></h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" style="max-height: 60vh; overflow-y: auto; padding: 1.5rem;">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted small text-uppercase">Full Name</label>
+                                <p class="mb-0 mt-1"><?php echo htmlspecialchars($enquiry['full_name']); ?></p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted small text-uppercase">Email</label>
+                                <p class="mb-0 mt-1">
+                                    <a href="mailto:<?php echo htmlspecialchars($enquiry['email']); ?>" class="text-primary text-decoration-none">
+                                        <?php echo htmlspecialchars($enquiry['email']); ?>
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted small text-uppercase">Phone</label>
+                                <p class="mb-0 mt-1">
+                                    <a href="tel:<?php echo htmlspecialchars($enquiry['phone']); ?>" class="text-success text-decoration-none">
+                                        <?php echo htmlspecialchars($enquiry['phone']); ?>
+                                    </a>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold text-muted small text-uppercase">Submitted At</label>
+                                <p class="mb-0 mt-1"><?php echo date('M d, Y h:i A', strtotime($enquiry['submitted_at'])); ?></p>
+                            </div>
+                        </div>
+                        <div class="mb-3" style="padding-left: 0.7rem;">
+                            <label class="fw-bold text-muted small text-uppercase">Subject</label>
+                            <p class="mb-0 mt-1 p-2 bg-light rounded"><?php echo htmlspecialchars($enquiry['subject']); ?></p>
+                        </div>
+                        <div>
+                            <label class="fw-bold text-muted small text-uppercase" style="padding-left: 0.7rem;">Message</label>
+                            <div class="border rounded p-3 bg-light mt-2" style="border-radius: 8px !important;">
+                                <?php echo nl2br(htmlspecialchars($enquiry['message'])); ?>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="padding: 1.5rem; border: none; background: #f8f9fa;">
+                        <a href="mailto:<?php echo htmlspecialchars($enquiry['email']); ?>" class="btn btn-primary rounded-pill px-4">
+                            <i class="fas fa-reply me-2"></i> Reply via Email
+                        </a>
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
+<?php endif; ?>
             </div>
         </main>
     </div>

@@ -17,14 +17,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = 'Please enter your email address.';
     } else {
         try {
+            // Check users table
             $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
             $stmt->execute([$email]);
             $user = $stmt->fetch();
 
-            if ($user) {
+            // Check patients table if not found in users
+            if (!$user) {
+                $stmt = $pdo->prepare("SELECT * FROM patients WHERE email = ?");
+                $stmt->execute([$email]);
+                $patient = $stmt->fetch();
+            } else {
+                $patient = false;
+            }
+
+            if ($user || $patient) {
                 $token = bin2hex(random_bytes(50));
-                $stmt = $pdo->prepare("UPDATE users SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?");
-                $stmt->execute([$token, $email]);
+                if ($user) {
+                    $stmt = $pdo->prepare("UPDATE users SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?");
+                    $stmt->execute([$token, $email]);
+                } else {
+                    $stmt = $pdo->prepare("UPDATE patients SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?");
+                    $stmt->execute([$token, $email]);
+                }
 
                 $mail = new PHPMailer(true);
 

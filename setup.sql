@@ -37,6 +37,8 @@ CREATE TABLE patients (
     allergies TEXT,
     insurance_number VARCHAR(50),
     insurance_provider VARCHAR(100),
+    reset_token VARCHAR(255) DEFAULT NULL,
+    reset_token_expiry DATETIME DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     created_by INT,
@@ -89,12 +91,23 @@ CREATE TABLE medical_history (
     treatment TEXT,
     prescribed_medications TEXT,
     follow_up_date DATE,
-    vital_signs JSON, -- {"blood_pressure": "120/80", "temperature": "98.6", "heart_rate": "72", "weight": "70kg"}
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
     FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id)
+);
+
+-- Enquiries table for contact/enquiry form submissions
+
+CREATE TABLE enquiries (
+    enquiry_id VARCHAR(20) PRIMARY KEY, -- custom formatted ID like ENQ00001
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    subject VARCHAR(150) NOT NULL,
+    message TEXT NOT NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Insert default admin user
@@ -108,14 +121,4 @@ CREATE INDEX idx_appointments_status ON appointments(status);
 CREATE INDEX idx_medical_history_patient ON medical_history(patient_id);
 CREATE INDEX idx_medical_history_date ON medical_history(visit_date);
 
--- Enquiries table for contact/enquiry form submissions
-CREATE TABLE enquiries (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    phone VARCHAR(20) NOT NULL,
-    subject VARCHAR(150) NOT NULL,
-    message TEXT NOT NULL,
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
