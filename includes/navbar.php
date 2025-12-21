@@ -40,8 +40,13 @@
                 <?php endif; ?>
                 <?php if (hasRole('patient')): ?>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2 nav-animate <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard-patient.php' ? 'nav-active' : ''; ?>" href="dashboard-patient.php">
+                    <a class="nav-link d-flex align-items-center gap-2 nav-animate <?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard-patient.php') ? 'nav-active' : ''; ?>" href="dashboard-patient.php">
                         <span style="font-size: 1.00rem;">My Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 nav-animate <?php echo (basename($_SERVER['PHP_SELF']) == 'doctors-list.php') ? 'nav-active' : ''; ?>" href="doctors-list.php">
+                        <span style="font-size: 1.00rem;">Doctors</span>
                     </a>
                 </li>
                 <?php endif; ?>

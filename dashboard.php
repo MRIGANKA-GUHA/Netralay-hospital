@@ -2,6 +2,12 @@
 require_once 'includes/config.php';
 requireLogin();
 
+// Prevent patients from accessing this dashboard
+if (hasRole('patient')) {
+    header('Location: dashboard-patient.php');
+    exit();
+}
+
 // Get dashboard statistics
 try {
     $stats = [];

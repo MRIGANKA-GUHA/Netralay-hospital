@@ -1363,3 +1363,9 @@ body.login-page, body.register-page {
         width: 100%;
     }
 }
+
+/*As its not directly coming from bootstrap manually declared*/
+.bg-gradient-danger {
+  background: linear-gradient(45deg, #fc544b, #ff6b6b);
+  color: #fff;
+}

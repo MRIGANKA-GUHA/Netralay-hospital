@@ -497,9 +497,22 @@ $selected_patient_id = $_GET['patient_id'] ?? '';
                                             <label for="appointment_date" class="form-label-modern" style="font-size: 1.00rem;">
                                                  Appointment Date <span class="text-danger">*</span>
                                             </label>
-                                            <input type="date" class="form-control form-control-modern" id="appointment_date" name="appointment_date" 
-                                                   min="<?php echo date('Y-m-d'); ?>" required>
+                                              <input type="date" class="form-control form-control-modern" id="appointment_date" name="appointment_date" 
+                                                  min="<?php echo date('Y-m-d'); ?>" required>
+                                              <script>
+                                              // doctorAvailability[doctor_id] = [array of available days]
+                                              window.doctorAvailability = {};
+                                              <?php
+                                              // Build doctor availability JS object
+                                              $doctorDaysStmt = $pdo->query("SELECT doctor_id, available_days FROM doctors");
+                                              while ($row = $doctorDaysStmt->fetch()) {
+                                                  $days = json_decode($row['available_days'], true) ?: [];
+                                                  echo "window.doctorAvailability['{$row['doctor_id']}'] = " . json_encode($days) . ";\n";
+                                              }
+                                              ?>
+                                              </script>
                                         </div>
+                                        <script src="js/doctor-availability.js"></script>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group-modern">
