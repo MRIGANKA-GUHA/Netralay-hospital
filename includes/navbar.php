@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg modern-navbar fixed-top">
     <div class="container-fluid d-flex align-items-center justify-content-between">
         <!-- Brand Left -->
-        <a class="navbar-brand d-flex align-items-center gap-2" href="dashboard.php">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="<?php echo hasRole('patient') ? 'dashboard-patient.php' : 'dashboard.php'; ?>">
             <span class="fw-bold fs-4" style="padding-left: 12px; background: linear-gradient(90deg, #007bff, #00d4ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent;">
                 <?php echo SITE_NAME; ?>
             </span>
@@ -9,6 +9,7 @@
         <!-- Centered Nav Links -->
         <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
             <ul class="navbar-nav mx-auto gap-2">
+                <?php if (!hasRole('patient')): ?>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-2 nav-animate <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'nav-active' : ''; ?>" href="dashboard.php">
                         <span style="font-size: 1.00rem;">Dashboard</span>
@@ -24,6 +25,7 @@
                          <span style="font-size: 1.00rem;">Appointments</span>
                     </a>
                 </li>
+                <?php endif; ?>
                 <?php if (hasRole('admin')): ?>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-2 nav-animate <?php echo basename($_SERVER['PHP_SELF']) == 'doctors.php' ? 'nav-active' : ''; ?>" href="doctors.php">
@@ -33,6 +35,13 @@
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-2 nav-animate <?php echo basename($_SERVER['PHP_SELF']) == 'enquiries-list.php' ? 'nav-active' : ''; ?>" href="enquiries-list.php">
                         <span style="font-size: 1.00rem;">Enquiries</span>
+                    </a>
+                </li>
+                <?php endif; ?>
+                <?php if (hasRole('patient')): ?>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 nav-animate <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard-patient.php' ? 'nav-active' : ''; ?>" href="dashboard-patient.php">
+                        <span style="font-size: 1.00rem;">My Dashboard</span>
                     </a>
                 </li>
                 <?php endif; ?>

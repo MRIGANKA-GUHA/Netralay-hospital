@@ -18,6 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $blood_type = sanitize($_POST['blood_type']);
     $phone = sanitize($_POST['phone']);
     $email = sanitize($_POST['email']);
+    $password = $_POST['password'];
+    $confirm_password = $_POST['confirm_password'];
     $address = sanitize($_POST['address']);
     $emergency_contact_name = sanitize($_POST['emergency_contact_name']);
     $emergency_contact_phone = sanitize($_POST['emergency_contact_phone']);
@@ -27,10 +29,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Validation
     if (empty($first_name) || empty($last_name) || empty($date_of_birth) || empty($gender) || 
-        empty($phone) || empty($email) || empty($address)) {
+        empty($phone) || empty($email) || empty($password) || empty($address)) {
         $error = 'Please fill in all required fields';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address';
+    } elseif (strlen($password) < 6) {
+        $error = 'Password must be at least 6 characters long';
+    } elseif ($password !== $confirm_password) {
+        $error = 'Passwords do not match';
     } else {
         try {
             // Check if email already exists
@@ -42,8 +48,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Generate sequential patient ID
                 $patient_id = generateId('NET', 'patients', 'patient_id', 6);
                 
+                // Hash the password
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                
                 // Insert patient record
-                $stmt = $pdo->prepare("INSERT INTO patients (patient_id, first_name, last_name, date_of_birth, gender, phone, email, address, emergency_contact_name, emergency_contact_phone, blood_type, allergies, insurance_provider, insurance_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt = $pdo->prepare("INSERT INTO patients (patient_id, first_name, last_name, date_of_birth, gender, phone, email, password, address, emergency_contact_name, emergency_contact_phone, blood_type, allergies, insurance_provider, insurance_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 
                 $stmt->execute([
                     $patient_id,
@@ -53,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $gender,
                     $phone,
                     $email,
+                    $hashed_password,
                     $address,
                     $emergency_contact_name,
                     $emergency_contact_phone,
@@ -61,8 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $insurance_provider ?: null,
                     $insurance_number ?: null
                 ]);
-                
-                $success = 'Registration successful! Your Patient ID is: ' . $patient_id;
+                $success = 'Registration successful! Your Patient ID is: ' . $patient_id . '.';
             }
         } catch (PDOException $e) {
             $error = 'Registration failed. Please try again.';
@@ -190,6 +199,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <label for="email" class="required">Email Address</label>
                             <input type="email" class="form-control" id="email" name="email" 
                                    value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="password" class="required">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   minlength="6" required>
+                            <small class="text-muted">Minimum 6 characters</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="confirm_password" class="required">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                                   minlength="6" required>
                         </div>
                     </div>
                 </div>

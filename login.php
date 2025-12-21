@@ -3,7 +3,11 @@ require_once 'includes/config.php';
 
 // Redirect if already logged in
 if (isLoggedIn()) {
-    redirect('dashboard.php');
+    if ($_SESSION['role'] === 'patient') {
+        redirect('dashboard-patient.php');
+    } else {
+        redirect('dashboard.php');
+    }
 }
 
 $error = '';
@@ -11,26 +15,38 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = sanitize($_POST['username']);
     $password = $_POST['password'];
-    
     if (empty($username) || empty($password)) {
         $error = 'Please fill in all fields';
     } else {
         try {
+            // Try users table (admin/doctor)
             $stmt = $pdo->prepare("SELECT user_id, username, password, full_name, role, email FROM users WHERE (username = ? OR email = ?) AND is_active = 1");
             $stmt->execute([$username, $username]);
             $user = $stmt->fetch();
-
             if ($user && password_verify($password, $user['password'])) {
                 $_SESSION['user_id'] = $user['user_id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['full_name'] = $user['full_name'];
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['email'] = $user['email'];
-
                 showAlert('Login successful! Welcome back, ' . $user['full_name'], 'success');
                 redirect('dashboard.php');
             } else {
-                $error = 'Invalid username/email or password';
+                // Try patients table
+                $stmt = $pdo->prepare("SELECT patient_id, first_name, last_name, password, email FROM patients WHERE (patient_id = ? OR email = ?)");
+                $stmt->execute([$username, $username]);
+                $patient = $stmt->fetch();
+                if ($patient && password_verify($password, $patient['password'])) {
+                    $_SESSION['user_id'] = $patient['patient_id'];
+                    $_SESSION['username'] = $patient['patient_id'];
+                    $_SESSION['full_name'] = $patient['first_name'] . ' ' . $patient['last_name'];
+                    $_SESSION['role'] = 'patient';
+                    $_SESSION['email'] = $patient['email'];
+                    showAlert('Login successful! Welcome, ' . $patient['first_name'] . '!', 'success');
+                    redirect('dashboard-patient.php');
+                } else {
+                    $error = 'Invalid username/email or password';
+                }
             }
         } catch (PDOException $e) {
             $error = 'Login failed. Please try again.';
