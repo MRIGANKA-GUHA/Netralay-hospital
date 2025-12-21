@@ -84,9 +84,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <style>
-        .login-header h1 {
+       .login-header h1 {
             text-transform: uppercase;
             letter-spacing: 0.08em;
+            font-weight: bold;
         }
     </style>
 </head>

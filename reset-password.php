@@ -59,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .login-header h1 {
             text-transform: uppercase;
             letter-spacing: 0.08em;
+            font-weight: bold;
         }
     </style>
 </head>
