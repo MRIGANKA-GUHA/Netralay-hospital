@@ -376,9 +376,14 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="login.php" style="font-size: 1.05rem;">
-                             Login
-                        </a>
+                            <a class="nav-link" href="login.php" style="font-size: 1.05rem;">
+                                Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="register.php" style="font-size: 1.05rem;">
+                                Register
+                            </a>
                     </li>
                 </ul>
             </div>
@@ -388,7 +393,7 @@
     <!-- Hero Section -->
     <section id="home" class="main-content">
         <div class="hero-section">
-            <h1>Welcome to Netralay Hospital</h1>
+            <h1>Welcome to NETRALAY HOSPITAL</h1>
             <p>Your trusted healthcare partner providing quality medical services with compassion and excellence.</p>
             <div class="hero-buttons">
                 <a href="login.php" class="hero-btn btn-primary-custom">
@@ -410,10 +415,10 @@
                 <div class="col-lg-3 col-md-6 col-sm-12">
                     <div class="doctor-card">
                         <div class="doctor-image">
-                            <img src="#" alt="Doctor">
+                            <img src="./images/Rajesh.png" alt="Doctor">
                         </div>
                         <div class="doctor-info">
-                            <h4>Dr. John Smith</h4>
+                            <h4>Dr. Rajesh Kumar</h4>
                             <p class="specialization">Cardiologist</p>
                             <p class="experience">15 years experience</p>
                         </div>
@@ -423,11 +428,11 @@
                 <div class="col-lg-3 col-md-6 col-sm-12">
                     <div class="doctor-card">
                         <div class="doctor-image">
-                            <img src="#" alt="Doctor" >
+                            <img src="./images/Mahesh.png" alt="Doctor" >
                         </div>
                         <div class="doctor-info">
-                            <h4>Dr. Sarah Johnson</h4>
-                            <p class="specialization">Neurologist</p>
+                            <h4>Dr. Mahesh Iyer</h4>
+                            <p class="specialization">General Medicine</p>
                             <p class="experience">12 years experience</p>
                         </div>
                     </div>
@@ -436,11 +441,11 @@
                 <div class="col-lg-3 col-md-6 col-sm-12">
                     <div class="doctor-card">
                         <div class="doctor-image">
-                            <img src="#" alt="Doctor">
+                            <img src="./images/Vikram.png" alt="Doctor">
                         </div>
                         <div class="doctor-info">
-                            <h4>Dr. Michael Chen</h4>
-                            <p class="specialization">Orthopedic Surgeon</p>
+                            <h4>Dr. Vikram Singh</h4>
+                            <p class="specialization">Neurology</p>
                             <p class="experience">18 years experience</p>
                         </div>
                     </div>
@@ -449,11 +454,11 @@
                 <div class="col-lg-3 col-md-6 col-sm-12">
                     <div class="doctor-card">
                         <div class="doctor-image">
-                            <img src="#" alt="Doctor">
+                            <img src="./images/Sneha.png" alt="Doctor">
                         </div>
                         <div class="doctor-info">
-                            <h4>Dr. Emily Brown</h4>
-                            <p class="specialization">Pediatrician</p>
+                            <h4>Dr. Sneha Patel</h4>
+                            <p class="specialization">Dermatology</p>
                             <p class="experience">10 years experience</p>
                         </div>
                     </div>
