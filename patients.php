@@ -52,13 +52,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = 'Please fill in all required fields';
         } else {
             try {
+                $patient_id = generateId('NET', 'patients', 'patient_id', 6);
                 $stmt = $pdo->prepare("INSERT INTO patients (patient_id, first_name, last_name, date_of_birth, gender, phone, email, address, emergency_contact_name, emergency_contact_phone, blood_type, allergies, insurance_number, insurance_provider, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([null, $first_name, $last_name, $date_of_birth, $gender, $phone, $email, $address, $emergency_contact_name, $emergency_contact_phone, $blood_type, $allergies, $insurance_number, $insurance_provider, $_SESSION['user_id']]);
-                // Fetch the generated patient_id
-                $stmt2 = $pdo->query("SELECT patient_id FROM patients ORDER BY created_at DESC LIMIT 1");
-                $row = $stmt2->fetch();
-                $generated_patient_id = $row ? $row['patient_id'] : '';
-                showAlert('Patient registered successfully! Patient ID: ' . $generated_patient_id, 'success');
+                $stmt->execute([$patient_id, $first_name, $last_name, $date_of_birth, $gender, $phone, $email, $address, $emergency_contact_name, $emergency_contact_phone, $blood_type, $allergies, $insurance_number, $insurance_provider, $_SESSION['user_id']]);
+                showAlert('Patient registered successfully! Patient ID: ' . $patient_id, 'success');
                 redirect('patients.php');
             } catch (PDOException $e) {
                 $error = 'Error adding patient: ' . $e->getMessage();

@@ -57,17 +57,6 @@ CREATE TABLE doctors (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
--- Trigger for auto-incrementing doctor_id in format DOC001, DOC002, ...
-DELIMITER //
-CREATE TRIGGER before_doctor_insert 
-BEFORE INSERT ON doctors
-FOR EACH ROW
-BEGIN
-    IF NEW.doctor_id = '' OR NEW.doctor_id IS NULL THEN
-        SET NEW.doctor_id = CONCAT('DOC', LPAD((SELECT IFNULL(MAX(CAST(SUBSTRING(doctor_id, 4) AS UNSIGNED)), 0) + 1 FROM doctors), 3, '0'));
-    END IF;
-END//
-DELIMITER ;
 
 -- Appointments table
 CREATE TABLE appointments (
@@ -118,28 +107,3 @@ CREATE INDEX idx_appointments_status ON appointments(status);
 CREATE INDEX idx_medical_history_patient ON medical_history(patient_id);
 CREATE INDEX idx_medical_history_date ON medical_history(visit_date);
 
--- Create triggers for automatic ID generation
-DELIMITER //
-
-CREATE TRIGGER before_patient_insert 
-BEFORE INSERT ON patients
-FOR EACH ROW
-BEGIN
-    IF NEW.patient_id = '' OR NEW.patient_id IS NULL THEN
-        SET NEW.patient_id = CONCAT('NET', LPAD((SELECT IFNULL(MAX(CAST(SUBSTRING(patient_id, 4) AS UNSIGNED)), 0) + 1 FROM patients), 6, '0'));
-    END IF;
-END//
-
-CREATE TRIGGER before_appointment_insert 
-BEFORE INSERT ON appointments
-FOR EACH ROW
-BEGIN
-    IF NEW.appointment_id = '' OR NEW.appointment_id IS NULL THEN
-        SET NEW.appointment_id = CONCAT('APT', LPAD((SELECT IFNULL(MAX(CAST(SUBSTRING(appointment_id, 4) AS UNSIGNED)), 0) + 1 FROM appointments), 6, '0'));
-    END IF;
-END//
-
-DELIMITER ;
-
--- Note: Default password for all users is 'password'
--- Remember to change these passwords in production!

@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 } elseif ($patient_conflict) {
                     $error = 'This patient already has an appointment with this doctor at the selected date and time.';
                 } else {
-                    $appointment_id = generateId('APT', 'appointments', 'appointment_id');
+                    $appointment_id = generateId('APT', 'appointments', 'appointment_id', 6);
                     $stmt = $pdo->prepare("INSERT INTO appointments (appointment_id, patient_id, doctor_id, appointment_date, appointment_time, reason, notes, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
                     $stmt->execute([$appointment_id, $patient_id, $doctor_id, $appointment_date, $appointment_time, $reason, $notes, $_SESSION['user_id']]);
                     showAlert('Appointment scheduled successfully! Appointment ID: ' . $appointment_id, 'success');

@@ -32,20 +32,14 @@ function hasRole($role) {
     return isset($_SESSION['role']) && $_SESSION['role'] === $role;
 }
 
-function generateId($prefix, $table, $column) {
+function generateId($prefix, $table, $column, $padLength = 6) {
     global $pdo;
-    do {
-        // Generate a random 6-digit number
-        $random_id = mt_rand(100000, 999999);
-        $id = $prefix . $random_id;
-        
-        // Check if this ID already exists
-        $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM $table WHERE $column = ?");
-        $stmt->execute([$id]);
-        $result = $stmt->fetch();
-    } while ($result['count'] > 0); // Keep generating until we get a unique ID
-    
-    return $id;
+    // Find the current max numeric part for the given prefix
+    $stmt = $pdo->prepare("SELECT MAX(CAST(SUBSTRING($column, LENGTH(?) + 1) AS UNSIGNED)) as max_id FROM $table WHERE $column LIKE CONCAT(?, '%')");
+    $stmt->execute([$prefix, $prefix]);
+    $row = $stmt->fetch();
+    $nextId = ($row['max_id'] ?? 0) + 1;
+    return $prefix . str_pad($nextId, $padLength, '0', STR_PAD_LEFT);
 }
 
 function sanitize($data) {
