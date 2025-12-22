@@ -1,42 +1,176 @@
-# Patient Management System
 
-A comprehensive web-based patient management system designed for hospitals, clinics, and medical practices. Built with PHP, MySQL, and Bootstrap 5.
+# Netralay Hospital Patient Management System
+
+A web-based patient management system for hospitals and clinics, built with PHP (PDO), MySQL, Bootstrap 5, and PHPMailer. It supports user authentication, patient and doctor management, appointment scheduling, password reset, and a responsive UI.
+
+---
 
 ## Features
 
-### Core Functionality
-- **User Authentication**: Secure login system with role-based access control (no public registration)
-- **Patient Management**: Add, edit, and view patient details
-- **Appointment Scheduling**: Book, manage, and track appointments
-- **Dashboard**: Overview of key metrics and recent activities
+- **User Authentication** (Admin, Doctor, Patient)
+- **Profile Management** with image upload
+- **Patient Management** (add, edit, view)
+- **Doctor Management** (add, edit, view)
+- **Appointment Scheduling** (book, manage, track)
+- **Enquiries** (manage patient enquiries)
+- **Password Reset** (secure, email-based, for users and patients)
+- **Responsive Dashboard** for all roles
+- **Role-based Navigation** (dynamic navbar)
+- **Robust Security** (password hashing, prepared statements, session management)
+- **Modern UI** (Bootstrap 5, custom CSS)
 
-### User Roles
-- **Admin**: Full system access, user management, system settings
-- **Doctor**: Patient records, appointments, diagnosis
-- **Receptionist**: Patient and appointment management
+---
 
-### Key Features
-- Responsive design for mobile and desktop
-- Patient ID auto-generation (e.g., NET000001)
-- Doctor ID auto-generation (e.g., DOC001)
-- Appointment status management
-- Role-based navigation and permissions
-- No prescriptions module (removed for now)
-- Data validation and security measures
+## Project Structure
 
-## Installation
+```
+netralay-hospital/
+├── appointments.php
+├── dashboard.php
+├── dashboard-patient.php
+├── doctors.php
+├── doctors-list.php
+├── enquiries.php
+├── enquiries-list.php
+├── forgot-password.php
+├── index.php
+├── login.php
+├── logout.php
+├── patients.php
+├── profile.php
+├── register.php
+├── reset-password.php
+├── schedule-appointment.php
+├── setup.sql
+├── css/
+│   └── style.css
+├── images/
+│   └── [profile and UI images]
+├── includes/
+│   ├── config.php
+│   ├── database.php
+│   └── navbar.php
+├── js/
+│   ├── dashboard.js
+│   └── doctor-availability.js
+├── PHPMailer-master/
+│   ├── src/
+│   ├── language/
+│   └── ...
+└── README.md
+```
+
+---
+
+## Setup Instructions
 
 ### Prerequisites
-- XAMPP or similar local server environment
-- PHP 7.4 or higher
-- MySQL 5.7 or higher
+- XAMPP (or similar local server)
+- PHP 7.4+
+- MySQL 5.7+
 - Modern web browser
 
-### Setup Instructions
+### Installation Steps
+1. **Clone or copy** the `netralay-hospital` folder to `C:/xampp/htdocs/`
+2. **Start XAMPP** (Apache & MySQL)
+3. **Create the database**:
+   - Open phpMyAdmin (`http://localhost/phpmyadmin`)
+   - Import `setup.sql` to create tables and triggers
+4. **Configure database connection**:
+   - Edit `includes/config.php` with your DB credentials
+5. **Access the app**:
+   - Go to `http://localhost/netralay-hospital/`
 
-1. **Install XAMPP**
-   - Download and install XAMPP from https://www.apachefriends.org/
-   - Start Apache and MySQL services
+---
+
+## Default Credentials
+
+| Role         | Username | Password  |
+|--------------|----------|-----------|
+| Admin        | admin    | password  |
+| Doctor       | (set by admin) | (set by admin) |
+| Role         | Username | Password  |
+|--------------|----------|-----------|
+| Admin        | admin    | password  |
+| Doctor       | (set by admin) | (set by admin) |
+| Patient      | (register)     | (set on register) |
+| Patient      | (register)     | (set on register) |
+
+> **Change all default passwords after first login!**
+
+---
+
+## Usage Guide
+
+### 1. Login
+Go to the login page and enter your credentials.
+
+### 2. Dashboard
+See an overview of appointments, patients, and system stats.
+
+### 3. Profile
+View and update your profile, including uploading a profile image.
+
+### 4. Patients
+Add, edit, and view patient details. Search and manage patient records.
+
+### 5. Doctors
+Add, edit, and view doctor profiles. Assign appointments.
+
+### 6. Appointments
+Schedule, view, and manage appointments. Filter by status, doctor, or patient.
+
+### 7. Enquiries
+View and manage patient enquiries.
+
+### 8. Password Reset
+Use the "Forgot Password" link to reset your password via email (PHPMailer required, see below).
+
+---
+
+## Email (PHPMailer) Setup
+
+PHPMailer is included in `PHPMailer-master/`. To enable password reset via email:
+- Configure SMTP settings in `includes/config.php` (if needed)
+- Ensure your server can send emails (use Gmail SMTP or similar for local testing)
+
+---
+
+## Security Features
+
+- Passwords hashed with PHP's `password_hash()`
+- All DB queries use PDO prepared statements
+- Session-based authentication and role checks
+- Input validation and sanitization
+- CSRF protection on forms
+
+---
+
+## Customization & Extending
+
+- Add new pages by following the structure in `/includes/` and `/css/`
+- Update navigation in `includes/navbar.php`
+- Use Bootstrap 5 and `css/style.css` for UI changes
+- Update `setup.sql` for DB schema changes
+
+---
+
+## Troubleshooting
+
+- **DB Connection Error**: Check XAMPP, DB credentials in `includes/config.php`, and that DB is imported
+- **Email Not Sending**: Check SMTP config and PHPMailer setup
+- **404 Errors**: Check file paths and routing in includes/navbar.php
+- **Styling Issues**: Ensure `css/style.css` and Bootstrap are loaded
+
+---
+
+## License & Disclaimer
+
+This project is for educational/demo use. For production, add further security, compliance, and professional testing.
+
+---
+
+**Maintained by Netralay Hospital IT Team**
 
 2. **Database Setup**
    - Open phpMyAdmin (http://localhost/phpmyadmin)
@@ -65,7 +199,7 @@ A comprehensive web-based patient management system designed for hospitals, clin
 
 ### Administrator
 - **Username**: `admin`
-- **Password**: `password`
+- **Password**: `Mriganka@123`
 
 **⚠️ Important**: Change these default passwords after first login!
 
