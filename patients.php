@@ -489,7 +489,7 @@ try {
                 <!-- Medical History Section -->
                 <div class="card shadow-lg border-0 mt-4" style="border-radius: 1rem;">
                     <div class="card-header text-white" style="background: linear-gradient(135deg, #6610f2 0%, #e83e8c 100%); border-radius: 1rem 1rem 0 0;">
-                        <h5 class="mb-0" style="font-family: 'Poppins', 'Segoe UI', sans-serif; font-size: 1.1rem;"><i class="fas fa-notes-medical me-2"></i> Medical History</h5>
+                        <h5 class="mb-0 text-black" style="font-family: 'Poppins', 'Segoe UI', sans-serif; font-size: 1.1rem;">Medical History</h5>
                     </div>
                     <div class="card-body p-4" style="background: #fff; font-family: 'Poppins', 'Segoe UI', sans-serif;">
                         <?php if (!empty($view_patient['medical_history'])): ?>

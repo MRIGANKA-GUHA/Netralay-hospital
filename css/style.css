@@ -269,6 +269,19 @@ body.login-page, body.register-page {
     letter-spacing: 1px;
 }
 
+/* Center main nav links within the navbar on large screens */
+@media (min-width: 992px) {
+    .modern-navbar .container-fluid {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+    }
+
+    .modern-navbar #navbarNav {
+        justify-content: center;
+    }
+}
+
 /* Navbar link animation */
 .nav-animate {
     transition: transform 0.25s cubic-bezier(.4,2,.6,1), box-shadow 0.25s cubic-bezier(.4,2,.6,1), color 0.2s;
