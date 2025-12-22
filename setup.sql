@@ -2,8 +2,8 @@
 -- Created: December 2025
 
 -- Create database
-CREATE DATABASE IF NOT EXISTS netralay_hospital;
-USE netralay_hospital;
+CREATE DATABASE IF NOT EXISTS if0_40720359_netralay_hospital;
+USE if0_40720359_netralay_hospital;
 
 -- Users table for authentication (doctors, receptionist , admins)
 CREATE TABLE users (

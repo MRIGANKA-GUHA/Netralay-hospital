@@ -62,12 +62,6 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end shadow rounded-3 p-2" style="min-width: 200px;">
                     <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="profile.php">
-                            <i class="fas fa-user-circle text-primary"></i> <span>Profile</span>
-                        </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
                         <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="forgot-password.php">
                             <i class="fas fa-key text-warning"></i> <span>Forgot Password</span>
                         </a>
