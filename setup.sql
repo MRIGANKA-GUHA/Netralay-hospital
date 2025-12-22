@@ -15,6 +15,8 @@ CREATE TABLE users (
     role ENUM('admin', 'doctor', 'patient') NOT NULL,
     phone VARCHAR(15),
     address TEXT,
+    reset_token VARCHAR(255) DEFAULT NULL,
+    reset_token_expiry DATETIME DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT TRUE
@@ -120,5 +122,10 @@ CREATE INDEX idx_appointments_date ON appointments(appointment_date);
 CREATE INDEX idx_appointments_status ON appointments(status);
 CREATE INDEX idx_medical_history_patient ON medical_history(patient_id);
 CREATE INDEX idx_medical_history_date ON medical_history(visit_date);
+
+
+-- Optional migration for existing databases (uncomment to apply):
+-- ALTER TABLE users ADD COLUMN reset_token VARCHAR(255) DEFAULT NULL;
+-- ALTER TABLE users ADD COLUMN reset_token_expiry DATETIME DEFAULT NULL;
 
 

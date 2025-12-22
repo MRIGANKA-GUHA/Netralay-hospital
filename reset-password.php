@@ -4,6 +4,18 @@ require_once 'includes/config.php';
 $error = '';
 $success = '';
 
+// Helper: Check if a table has a column (to support different DB schemas)
+function hasColumn(PDO $pdo, $table, $column) {
+    try {
+        $db = $pdo->query('SELECT DATABASE()')->fetchColumn();
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?');
+        $stmt->execute([$db, $table, $column]);
+        return (int)$stmt->fetchColumn() > 0;
+    } catch (PDOException $e) {
+        return false;
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $token = sanitize($_POST['token']);
     $new_password = sanitize($_POST['new_password']);
@@ -12,18 +24,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = 'Please fill in all required fields.';
     } else {
         try {
-            // Check users table
-            $stmt = $pdo->prepare("SELECT * FROM users WHERE reset_token = ? AND reset_token_expiry > NOW()");
-            $stmt->execute([$token]);
-            $user = $stmt->fetch();
-
-            // Check patients table if not found in users
-            if (!$user) {
+            $user = false;
+            $patient = false;
+            // Only query tables that actually have the columns
+            if (hasColumn($pdo, 'users', 'reset_token') && hasColumn($pdo, 'users', 'reset_token_expiry')) {
+                $stmt = $pdo->prepare("SELECT * FROM users WHERE reset_token = ? AND reset_token_expiry > NOW()");
+                $stmt->execute([$token]);
+                $user = $stmt->fetch();
+            }
+            if (!$user && hasColumn($pdo, 'patients', 'reset_token') && hasColumn($pdo, 'patients', 'reset_token_expiry')) {
                 $stmt = $pdo->prepare("SELECT * FROM patients WHERE reset_token = ? AND reset_token_expiry > NOW()");
                 $stmt->execute([$token]);
                 $patient = $stmt->fetch();
-            } else {
-                $patient = false;
             }
 
             if ($user || $patient) {
@@ -31,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if ($user) {
                     $stmt = $pdo->prepare("UPDATE users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE reset_token = ?");
                     $stmt->execute([$hashed_password, $token]);
-                } else {
+                } elseif ($patient) {
                     $stmt = $pdo->prepare("UPDATE patients SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE reset_token = ?");
                     $stmt->execute([$hashed_password, $token]);
                 }

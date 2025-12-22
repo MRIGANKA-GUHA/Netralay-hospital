@@ -9,6 +9,17 @@ use PHPMailer\PHPMailer\Exception;
 
 $error = '';
 $success = '';
+// Helper: Check if a table has a column (to support different DB schemas)
+function hasColumn(PDO $pdo, $table, $column) {
+    try {
+        $db = $pdo->query('SELECT DATABASE()')->fetchColumn();
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?');
+        $stmt->execute([$db, $table, $column]);
+        return (int)$stmt->fetchColumn() > 0;
+    } catch (PDOException $e) {
+        return false;
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = sanitize($_POST['email']);
@@ -33,12 +44,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             if ($user || $patient) {
                 $token = bin2hex(random_bytes(50));
-                if ($user) {
+                $updated = false;
+                if ($user && hasColumn($pdo, 'users', 'reset_token') && hasColumn($pdo, 'users', 'reset_token_expiry')) {
                     $stmt = $pdo->prepare("UPDATE users SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?");
                     $stmt->execute([$token, $email]);
-                } else {
+                    $updated = true;
+                } elseif ($patient && hasColumn($pdo, 'patients', 'reset_token') && hasColumn($pdo, 'patients', 'reset_token_expiry')) {
                     $stmt = $pdo->prepare("UPDATE patients SET reset_token = ?, reset_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE email = ?");
                     $stmt->execute([$token, $email]);
+                    $updated = true;
                 }
 
                 $mail = new PHPMailer(true);
@@ -57,10 +71,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                     $mail->isHTML(true);
                     $mail->Subject = 'Password Reset Request';
-                    $mail->Body = "<p>Click the link below to reset your password:</p><p><a href='http://localhost/netralay-hospital/reset-password.php?token=$token'>Reset Password</a></p>";
+                    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                    $host = $_SERVER['HTTP_HOST'];
+                    $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+                    $resetLink = $scheme . '://' . $host . $basePath . '/reset-password.php?token=' . $token;
+                    $mail->Body = "<p>Click the link below to reset your password:</p><p><a href='" . htmlspecialchars($resetLink, ENT_QUOTES) . "'>Reset Password</a></p>";
 
                     $mail->send();
-                    $success = 'Password reset email sent successfully.';
+                    $success = $updated ? 'Password reset email sent successfully.' : 'Password reset is not supported for this account type on the current database schema.';
                 } catch (Exception $e) {
                     $error = 'Error sending email: ' . $mail->ErrorInfo;
                 }
